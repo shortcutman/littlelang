@@ -112,6 +112,18 @@ private:
 public:
     InstrBuffer() {}
 
+    void execute() {
+        void* exememory = mmap(NULL,
+            _buffer.size(),
+            PROT_READ | PROT_WRITE | PROT_EXEC,
+            MAP_ANON | MAP_PRIVATE | MAP_JIT,
+            -1,
+            0);
+        memset(exememory, 0, _buffer.size());
+        memcpy(exememory, &_buffer[0], _buffer.size());
+        reinterpret_cast<void(*)(void)>(exememory)();
+    }
+
     void push_mov_r64_imm64(Register dest, std::uint64_t input) {
         push_rexw();
         push_byte(0xb8 + (static_cast<int>(dest) & 0x07));
@@ -158,7 +170,7 @@ private:
 };
 
 void func6() {
-    const char* another = "func5";
+    const char* another = "func6";
     void* dlHandle = dlopen(0, RTLD_NOW);
     void* putsaddr = dlsym(dlHandle, "puts");
 
@@ -167,6 +179,7 @@ void func6() {
     b.push_mov_r64_imm64(Register::RDI, reinterpret_cast<uint64_t>(another));
     b.call_r64(Register::RAX);
     b.ret();
+    b.execute();
 }
 
 int main() {
