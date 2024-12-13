@@ -1,4 +1,6 @@
 
+#include "InstrBuffer.hpp"
+
 #include <iostream>
 #include <sys/mman.h>
 #include <string.h>
@@ -94,80 +96,7 @@ void func5() {
     ((funky)exememory)();
 }
 
-enum class Register {
-    RAX = 0,
-    RCX = 1,
-    RDX = 2,
-    RBX = 3,
-    RSP = 4,
-    RBP = 5,
-    RSI = 6,
-    RDI = 7
-};
 
-class InstrBuffer {
-private:
-    std::vector<std::uint8_t> _buffer;
-
-public:
-    InstrBuffer() {}
-
-    void execute() {
-        void* exememory = mmap(NULL,
-            _buffer.size(),
-            PROT_READ | PROT_WRITE | PROT_EXEC,
-            MAP_ANON | MAP_PRIVATE | MAP_JIT,
-            -1,
-            0);
-        memset(exememory, 0, _buffer.size());
-        memcpy(exememory, &_buffer[0], _buffer.size());
-        reinterpret_cast<void(*)(void)>(exememory)();
-    }
-
-    void push_mov_r64_imm64(Register dest, std::uint64_t input) {
-        push_rexw();
-        push_byte(0xb8 + (static_cast<int>(dest) & 0x07));
-        push_qword(input);
-    }
-
-    void call_r64(Register dest) {
-        push_byte(0xff);
-        push_modrm(3, 2, static_cast<int>(dest) & 0x03);
-    }
-
-    void ret() {
-        push_byte(0xc3);
-    }
-
-private:
-    void push_rexw() {
-        uint8_t byte = 0b01001000;
-        push_byte(byte);
-    }
-
-    void push_modrm(uint8_t mod, uint8_t regop, uint8_t rm) {
-        uint8_t byte = 0;
-        byte |= (mod & 0x03) << 6;
-        byte |= (regop & 0x07) << 3;
-        byte |= (rm & 0x07);
-        push_byte(byte);
-    }
-
-    void push_byte(uint8_t byte) {
-        _buffer.push_back(byte);
-    }
-
-    void push_qword(uint64_t qword) {
-        push_byte(qword & 0xff);
-        push_byte((qword >> 8) & 0xff);
-        push_byte((qword >> 16) & 0xff);
-        push_byte((qword >> 24) & 0xff);
-        push_byte((qword >> 32) & 0xff);
-        push_byte((qword >> 40) & 0xff);
-        push_byte((qword >> 48) & 0xff);
-        push_byte((qword >> 56) & 0xff);
-    }
-};
 
 void func6() {
     const char* another = "func6";
@@ -175,9 +104,9 @@ void func6() {
     void* putsaddr = dlsym(dlHandle, "puts");
 
     InstrBuffer b;
-    b.push_mov_r64_imm64(Register::RAX, reinterpret_cast<uint64_t>(putsaddr));
-    b.push_mov_r64_imm64(Register::RDI, reinterpret_cast<uint64_t>(another));
-    b.call_r64(Register::RAX);
+    b.push_mov_r64_imm64(InstrBuffer::Register::RAX, reinterpret_cast<uint64_t>(putsaddr));
+    b.push_mov_r64_imm64(InstrBuffer::Register::RDI, reinterpret_cast<uint64_t>(another));
+    b.call_r64(InstrBuffer::Register::RAX);
     b.ret();
     b.execute();
 }
