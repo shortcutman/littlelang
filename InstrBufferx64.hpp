@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <vector>
 
-class InstrBuffer {
+class InstrBufferx64 {
 private:
     std::vector<std::uint8_t> _buffer;
 
@@ -23,7 +23,7 @@ public:
     };
 
 public:
-    InstrBuffer() {}
+    InstrBufferx64() {}
 
     void execute();
 

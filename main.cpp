@@ -1,5 +1,5 @@
 
-#include "InstrBuffer.hpp"
+#include "InstrBufferx64.hpp"
 
 #include <iostream>
 #include <sys/mman.h>
@@ -103,10 +103,10 @@ void func6() {
     void* dlHandle = dlopen(0, RTLD_NOW);
     void* putsaddr = dlsym(dlHandle, "puts");
 
-    InstrBuffer b;
-    b.push_mov_r64_imm64(InstrBuffer::Register::RAX, reinterpret_cast<uint64_t>(putsaddr));
-    b.push_mov_r64_imm64(InstrBuffer::Register::RDI, reinterpret_cast<uint64_t>(another));
-    b.call_r64(InstrBuffer::Register::RAX);
+    InstrBufferx64 b;
+    b.push_mov_r64_imm64(InstrBufferx64::Register::RAX, reinterpret_cast<uint64_t>(putsaddr));
+    b.push_mov_r64_imm64(InstrBufferx64::Register::RDI, reinterpret_cast<uint64_t>(another));
+    b.call_r64(InstrBufferx64::Register::RAX);
     b.ret();
     b.execute();
 }

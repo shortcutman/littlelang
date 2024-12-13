@@ -9,6 +9,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_executable(LittleLang
     main.cpp
-    InstrBuffer.cpp
+    InstrBufferx64.cpp
 )
 target_compile_options(LittleLang PRIVATE -masm=intel)

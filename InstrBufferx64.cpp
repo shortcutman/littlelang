@@ -3,11 +3,11 @@
 // InstrBuffer.cpp
 //------------------------------------------------------------------------------
 
-#include "InstrBuffer.hpp"
+#include "InstrBufferx64.hpp"
 
 #include <sys/mman.h>
 
-void InstrBuffer::execute() {
+void InstrBufferx64::execute() {
     void* exememory = mmap(NULL,
         _buffer.size(),
         PROT_READ | PROT_WRITE | PROT_EXEC,
@@ -19,27 +19,27 @@ void InstrBuffer::execute() {
     reinterpret_cast<void(*)(void)>(exememory)();
 }
 
-void InstrBuffer::push_mov_r64_imm64(Register dest, std::uint64_t input) {
+void InstrBufferx64::push_mov_r64_imm64(Register dest, std::uint64_t input) {
     push_rexw();
     push_byte(0xb8 + (static_cast<int>(dest) & 0x07));
     push_qword(input);
 }
 
-void InstrBuffer::call_r64(Register dest) {
+void InstrBufferx64::call_r64(Register dest) {
     push_byte(0xff);
     push_modrm(3, 2, static_cast<int>(dest) & 0x03);
 }
 
-void InstrBuffer::ret() {
+void InstrBufferx64::ret() {
     push_byte(0xc3);
 }
 
-void InstrBuffer::push_rexw() {
+void InstrBufferx64::push_rexw() {
     uint8_t byte = 0b01001000;
     push_byte(byte);
 }
 
-void InstrBuffer::push_modrm(uint8_t mod, uint8_t regop, uint8_t rm) {
+void InstrBufferx64::push_modrm(uint8_t mod, uint8_t regop, uint8_t rm) {
     uint8_t byte = 0;
     byte |= (mod & 0x03) << 6;
     byte |= (regop & 0x07) << 3;
@@ -47,11 +47,11 @@ void InstrBuffer::push_modrm(uint8_t mod, uint8_t regop, uint8_t rm) {
     push_byte(byte);
 }
 
-void InstrBuffer::push_byte(uint8_t byte) {
+void InstrBufferx64::push_byte(uint8_t byte) {
     _buffer.push_back(byte);
 }
 
-void InstrBuffer::push_qword(uint64_t qword) {
+void InstrBufferx64::push_qword(uint64_t qword) {
     push_byte(qword & 0xff);
     push_byte((qword >> 8) & 0xff);
     push_byte((qword >> 16) & 0xff);
