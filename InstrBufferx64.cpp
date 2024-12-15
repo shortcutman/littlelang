@@ -19,6 +19,10 @@ void InstrBufferx64::execute() {
     reinterpret_cast<void(*)(void)>(exememory)();
 }
 
+std::vector<uint8_t> InstrBufferx64::buffer() const {
+    return _buffer;
+}
+
 void InstrBufferx64::push_mov_r64_imm64(Register dest, std::uint64_t input) {
     push_rexw();
     push_byte(0xb8 + (static_cast<int>(dest) & 0x07));
