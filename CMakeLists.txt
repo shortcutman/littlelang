@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_executable(LittleLang
     main.cpp
     InstrBufferx64.cpp
+    Parser.cpp
 )
 target_compile_options(LittleLang PRIVATE -masm=intel)
 
@@ -26,6 +27,8 @@ add_executable(
     ll_tests
     InstrBufferx64.cpp
     InstrBufferx64.tests.cpp
+    Parser.cpp
+    Parser.tests.cpp
 )
 target_link_libraries(
     ll_tests
