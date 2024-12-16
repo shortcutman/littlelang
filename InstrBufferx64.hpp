@@ -3,6 +3,8 @@
 // InstrBuffer.hpp
 //------------------------------------------------------------------------------
 
+#pragma once
+
 #include <cstdint>
 #include <vector>
 
