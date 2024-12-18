@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_executable(LittleLang
     main.cpp
+    Compilerx64.cpp
     InstrBufferx64.cpp
     Parser.cpp
 )
@@ -25,6 +26,8 @@ enable_testing()
 
 add_executable(
     ll_tests
+    Compilerx64.cpp
+    Compilerx64.tests.cpp
     InstrBufferx64.cpp
     InstrBufferx64.tests.cpp
     Parser.cpp
