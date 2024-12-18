@@ -19,4 +19,5 @@ TEST(Parser, parse_function_call) {
 
     EXPECT_EQ(call.functionAddr, putsaddr);
     EXPECT_EQ(call.param, p.string_heap.back().c_str());
+    EXPECT_TRUE(strcmp(p.string_heap.back().c_str(), "test") == 0);
 }

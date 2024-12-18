@@ -42,8 +42,6 @@ FunctionCall Parser::parse_function_call(const std::string& input) {
                 //close it
                 break;
             }
-        } else {
-            currentToken += c;
         }
 
         currentToken += c;
