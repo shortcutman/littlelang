@@ -1,5 +1,7 @@
 
+#include "Compilerx64.hpp"
 #include "InstrBufferx64.hpp"
+#include "Parser.hpp"
 
 #include <iostream>
 #include <sys/mman.h>
@@ -96,8 +98,6 @@ void func5() {
     ((funky)exememory)();
 }
 
-
-
 void func6() {
     const char* another = "func6";
     void* dlHandle = dlopen(0, RTLD_NOW);
@@ -111,6 +111,18 @@ void func6() {
     b.execute();
 }
 
+void func7() {
+    std::string example = R"(puts("func7"))";
+
+    Parser p;
+    auto call = p.parse_function_call(example);
+    InstrBufferx64 i;
+    compiler_x64::compile_function_call(call, i);
+    i.ret();
+    
+    i.execute();
+}
+
 int main() {
     anotherfunction();
     func2();
@@ -118,5 +130,6 @@ int main() {
     func4();
     func5();
     func6();
+    func7();
     return 0;
 }
