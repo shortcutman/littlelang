@@ -26,19 +26,20 @@ struct FunctionCall : public Statement {
     void* functionAddr;
     void* param;
 };
+typedef std::unique_ptr<FunctionCall> FunctionCallPtr;
 
 struct VariableConstAssignment : public Statement {
     std::string to;
     std::uint32_t value;
 };
+typedef std::unique_ptr<VariableConstAssignment> VariableConstAssignmentPtr;
 
-class Parser {
-
+class ParsedBlock {
 public:
     std::vector<std::string> string_heap;
 
 public:
-    FunctionCall parse_function_call(std::string_view input);
+    FunctionCallPtr parse_function_call(std::string_view input);
     VariableDefinition parse_variable_definition(std::string_view input);
-    VariableConstAssignment parse_variable_const_assignment(std::string_view input);
+    VariableConstAssignmentPtr parse_variable_const_assignment(std::string_view input);
 };

@@ -8,8 +8,8 @@
 
 #include <dlfcn.h>
 
-FunctionCall Parser::parse_function_call(std::string_view input) {
-    FunctionCall call;
+FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
+    auto call = std::unique_ptr<FunctionCall>();
     std::string currentToken;
     auto it = input.begin();
     for (; it != input.end(); it++) {
@@ -20,14 +20,14 @@ FunctionCall Parser::parse_function_call(std::string_view input) {
             currentToken += c;
         }
     }
-    call.functionName = currentToken;
+    call->functionName = currentToken;
 
     void* dlHandle = dlopen(0, RTLD_NOW);
     void* function = dlsym(dlHandle, currentToken.c_str());
     if (!function) {
         throw std::runtime_error("Unknown function name.");
     }
-    call.functionAddr = function;
+    call->functionAddr = function;
 
     it++;
     currentToken = "";
@@ -48,7 +48,7 @@ FunctionCall Parser::parse_function_call(std::string_view input) {
     }
 
     string_heap.push_back(currentToken);
-    call.param = reinterpret_cast<void*>(const_cast<char*>(string_heap.back().c_str()));
+    call->param = reinterpret_cast<void*>(const_cast<char*>(string_heap.back().c_str()));
 
     it++;
     if (*it != ')') {
@@ -58,7 +58,7 @@ FunctionCall Parser::parse_function_call(std::string_view input) {
     return call;
 }
 
-VariableDefinition Parser::parse_variable_definition(std::string_view input) {
+VariableDefinition ParsedBlock::parse_variable_definition(std::string_view input) {
     VariableDefinition def;
 
     std::string currentsymbol;
@@ -90,8 +90,8 @@ VariableDefinition Parser::parse_variable_definition(std::string_view input) {
     return def;
 }
 
-VariableConstAssignment Parser::parse_variable_const_assignment(std::string_view input) {
-    VariableConstAssignment assign;
+VariableConstAssignmentPtr ParsedBlock::parse_variable_const_assignment(std::string_view input) {
+    auto assign = std::make_unique<VariableConstAssignment>();
 
     std::string currentsymbol;
     auto it = input.begin();
@@ -102,7 +102,7 @@ VariableConstAssignment Parser::parse_variable_const_assignment(std::string_view
             currentsymbol += *it;
         }
     }
-    assign.to = currentsymbol;
+    assign->to = currentsymbol;
 
     it++;
     if (*it++ != '=' && *it++ != ' ') {
@@ -117,7 +117,7 @@ VariableConstAssignment Parser::parse_variable_const_assignment(std::string_view
             currentsymbol += *it;
         }
     }
-    assign.value = atoi(currentsymbol.c_str());
+    assign->value = atoi(currentsymbol.c_str());
 
     return assign;
 }

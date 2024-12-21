@@ -114,10 +114,10 @@ void func6() {
 void func7() {
     std::string example = R"(puts("func7"))";
 
-    Parser p;
+    ParsedBlock p;
     auto call = p.parse_function_call(example);
     InstrBufferx64 i;
-    compiler_x64::compile_function_call(call, i);
+    compiler_x64::compile_function_call(*call, i);
     i.ret();
     
     i.execute();
