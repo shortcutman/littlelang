@@ -9,12 +9,6 @@
 #include <string>
 #include <vector>
 
-struct FunctionCall {
-    std::string functionName;
-    void* functionAddr;
-    void* param;
-};
-
 struct VariableDefinition {
     enum Type {
         Int32
@@ -24,7 +18,16 @@ struct VariableDefinition {
     Type type;
 };
 
-struct VariableConstAssignment {
+struct Statement {
+};
+
+struct FunctionCall : public Statement {
+    std::string functionName;
+    void* functionAddr;
+    void* param;
+};
+
+struct VariableConstAssignment : public Statement {
     std::string to;
     std::uint32_t value;
 };
