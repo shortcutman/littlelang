@@ -5,6 +5,7 @@ project(LittleLang)
 set(CMAKE_OSX_ARCHITECTURES "x86_64")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_COMPILE_WARNING_AS_ERROR True)
 
 add_executable(LittleLang
     main.cpp
