@@ -57,3 +57,67 @@ FunctionCall Parser::parse_function_call(const std::string& input) {
 
     return call;
 }
+
+VariableDefinition Parser::parse_variable_definition(const std::string& input) {
+    VariableDefinition def;
+
+    std::string currentsymbol;
+    auto it = input.begin();
+    for (; it != input.end(); it++) {
+        if (*it == ' ') {
+            break;
+        } else {
+            currentsymbol += *it;
+        }
+    }
+
+    if (currentsymbol != "int32") {
+        throw std::runtime_error("unexpected type");
+    }
+    def.type = VariableDefinition::Int32;
+    it++;
+
+    currentsymbol = "";
+    for (; it != input.end(); it++) {
+        if (*it == ';') {
+            break;
+        } else {
+            currentsymbol += *it;
+        }
+    }
+    def.name = currentsymbol;
+
+    return def;
+}
+
+VariableConstAssignment Parser::parse_variable_const_assignment(const std::string& input) {
+    VariableConstAssignment assign;
+
+    std::string currentsymbol;
+    auto it = input.begin();
+    for (; it != input.end(); it++) {
+        if (*it == ' ') {
+            break;
+        } else {
+            currentsymbol += *it;
+        }
+    }
+    assign.to = currentsymbol;
+
+    it++;
+    if (*it++ != '=' && *it++ != ' ') {
+        throw std::runtime_error("unexpected character");
+    }
+
+    currentsymbol = "";
+    for (; it != input.end(); it++) {
+        if (*it == ';') {
+            break;
+        } else {
+            currentsymbol += *it;
+        }
+    }
+    assign.value = atoi(currentsymbol.c_str());
+
+    return assign;
+}
