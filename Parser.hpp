@@ -35,7 +35,7 @@ public:
     std::vector<std::string> string_heap;
 
 public:
-    FunctionCall parse_function_call(const std::string& input);
-    VariableDefinition parse_variable_definition(const std::string& input);
-    VariableConstAssignment parse_variable_const_assignment(const std::string& input);
+    FunctionCall parse_function_call(std::string_view input);
+    VariableDefinition parse_variable_definition(std::string_view input);
+    VariableConstAssignment parse_variable_const_assignment(std::string_view input);
 };

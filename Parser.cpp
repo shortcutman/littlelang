@@ -8,7 +8,7 @@
 
 #include <dlfcn.h>
 
-FunctionCall Parser::parse_function_call(const std::string& input) {
+FunctionCall Parser::parse_function_call(std::string_view input) {
     FunctionCall call;
     std::string currentToken;
     auto it = input.begin();
@@ -58,7 +58,7 @@ FunctionCall Parser::parse_function_call(const std::string& input) {
     return call;
 }
 
-VariableDefinition Parser::parse_variable_definition(const std::string& input) {
+VariableDefinition Parser::parse_variable_definition(std::string_view input) {
     VariableDefinition def;
 
     std::string currentsymbol;
@@ -90,7 +90,7 @@ VariableDefinition Parser::parse_variable_definition(const std::string& input) {
     return def;
 }
 
-VariableConstAssignment Parser::parse_variable_const_assignment(const std::string& input) {
+VariableConstAssignment Parser::parse_variable_const_assignment(std::string_view input) {
     VariableConstAssignment assign;
 
     std::string currentsymbol;
