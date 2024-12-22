@@ -20,7 +20,7 @@ TEST(Parser, parse_function_call) {
     EXPECT_EQ(call->functionAddr, putsaddr);
 
     auto stringparam = dynamic_cast<StringParam*>(call->params[0].get());
-    EXPECT_NE(stringparam, nullptr);
+    ASSERT_NE(stringparam, nullptr);
     EXPECT_EQ(stringparam->content, "test");
 }
 
@@ -38,11 +38,11 @@ TEST(Parser, printf_two_args) {
     EXPECT_EQ(call->params.size(), 2);
 
     auto stringparam = dynamic_cast<StringParam*>(call->params[0].get());
-    EXPECT_NE(stringparam, nullptr);
+    ASSERT_NE(stringparam, nullptr);
     EXPECT_EQ(stringparam->content, "test %i \n");
 
     auto intparam = dynamic_cast<Int64Param*>(call->params[1].get());
-    EXPECT_NE(intparam, nullptr);
+    ASSERT_NE(intparam, nullptr);
     EXPECT_EQ(intparam->content, 123);
 }
 
@@ -59,11 +59,11 @@ TEST(Parser, parse_function_call_stack_argument) {
     EXPECT_EQ(call->params.size(), 2);
 
     auto stringparam = dynamic_cast<StringParam*>(call->params[0].get());
-    EXPECT_NE(stringparam, nullptr);
+    ASSERT_NE(stringparam, nullptr);
     EXPECT_EQ(stringparam->content, "test %i \n");
 
     auto stackparam = dynamic_cast<StackVariableParam*>(call->params[1].get());
-    EXPECT_NE(stackparam, nullptr);
+    ASSERT_NE(stackparam, nullptr);
     EXPECT_EQ(stackparam->content, "intarg");
 }
 

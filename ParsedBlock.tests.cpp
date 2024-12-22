@@ -23,7 +23,8 @@ TEST(ParsedBlock, parse_many) {
     EXPECT_EQ(block.statements.size(), 1);
 
     auto assign = dynamic_cast<VariableConstAssignment*>(block.statements.front().get());
-    EXPECT_NE(assign, nullptr);
+    ASSERT_NE(assign, nullptr);
+
     EXPECT_EQ(assign->to, "test");
     EXPECT_EQ(assign->value, 123);
 }
@@ -44,12 +45,12 @@ TEST(ParsedBlock, parse_many2) {
     EXPECT_EQ(block.statements.size(), 2);
 
     auto assign1 = dynamic_cast<VariableConstAssignment*>(block.statements[0].get());
-    EXPECT_NE(assign1, nullptr);
+    ASSERT_NE(assign1, nullptr);
     EXPECT_EQ(assign1->to, "test");
     EXPECT_EQ(assign1->value, 123);
 
     auto assign2 = dynamic_cast<VariableConstAssignment*>(block.statements[1].get());
-    EXPECT_NE(assign2, nullptr);
+    ASSERT_NE(assign2, nullptr);
     EXPECT_EQ(assign2->to, "another");
     EXPECT_EQ(assign2->value, 1111);
 }
@@ -70,12 +71,12 @@ TEST(ParsedBlock, parse_many3) {
     EXPECT_EQ(block.statements.size(), 2);
 
     auto assign1 = dynamic_cast<VariableConstAssignment*>(block.statements[0].get());
-    EXPECT_NE(assign1, nullptr);
+    ASSERT_NE(assign1, nullptr);
     EXPECT_EQ(assign1->to, "test");
     EXPECT_EQ(assign1->value, 123);
 
     auto assign2 = dynamic_cast<VariableConstAssignment*>(block.statements[1].get());
-    EXPECT_NE(assign2, nullptr);
+    ASSERT_NE(assign2, nullptr);
     EXPECT_EQ(assign2->to, "another");
     EXPECT_EQ(assign2->value, 1111);
 }
@@ -96,7 +97,7 @@ TEST(ParsedBlock, parse_many4) {
     EXPECT_EQ(block.statements.size(), 1);
 
     auto assign1 = dynamic_cast<FunctionCall*>(block.statements[0].get());
-    EXPECT_NE(assign1, nullptr);
+    ASSERT_NE(assign1, nullptr);
     EXPECT_EQ(assign1->functionName, "puts");
     EXPECT_EQ(assign1->params.size(), 1);
 }
@@ -117,7 +118,7 @@ TEST(ParsedBlock, parse_whitespace1) {
     EXPECT_EQ(block.statements.size(), 1);
 
     auto assign = dynamic_cast<VariableConstAssignment*>(block.statements.front().get());
-    EXPECT_NE(assign, nullptr);
+    ASSERT_NE(assign, nullptr);
     EXPECT_EQ(assign->to, "test");
     EXPECT_EQ(assign->value, 123);
 }
@@ -142,12 +143,12 @@ TEST(ParsedBlock, parse_whitespace2) {
     EXPECT_EQ(block.statements.size(), 2);
 
     auto assign1 = dynamic_cast<VariableConstAssignment*>(block.statements[0].get());
-    EXPECT_NE(assign1, nullptr);
+    ASSERT_NE(assign1, nullptr);
     EXPECT_EQ(assign1->to, "test");
     EXPECT_EQ(assign1->value, 123);
 
     auto assign2 = dynamic_cast<VariableConstAssignment*>(block.statements[1].get());
-    EXPECT_NE(assign2, nullptr);
+    ASSERT_NE(assign2, nullptr);
     EXPECT_EQ(assign2->to, "another");
     EXPECT_EQ(assign2->value, 1111);
 }
