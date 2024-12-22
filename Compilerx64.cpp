@@ -90,7 +90,9 @@ void compiler_x64::compile_block_prefix(const ParsedBlock& block, InstrBufferx64
         stackSize += 16 - remainder;
     }
 
-    buff.sub(InstrBufferx64::Register::RSP, stackSize);
+    if (stackSize != 0) {
+        buff.sub(InstrBufferx64::Register::RSP, stackSize);
+    }
 }
 
 void compiler_x64::compile_block_suffix(const ParsedBlock& block, InstrBufferx64& buff) {
