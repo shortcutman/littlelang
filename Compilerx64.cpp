@@ -46,3 +46,16 @@ void compiler_x64::compile_function_call(const FunctionCall& call, InstrBufferx6
 
     buff.call_r64(InstrBufferx64::Register::RAX);
 }
+
+void compiler_x64::compile_block_prefix(const ParsedBlock& block, InstrBufferx64& buff) {
+    buff.push(InstrBufferx64::Register::RBP);
+    buff.mov(InstrBufferx64::Register::RBP, InstrBufferx64::Register::RSP);
+
+    auto stackSize = block.vars.size() * 8;
+    auto remainder = stackSize % 16;
+    if (remainder != 0) {
+        stackSize += 16 - remainder;
+    }
+
+    buff.sub(InstrBufferx64::Register::RSP, stackSize);
+}

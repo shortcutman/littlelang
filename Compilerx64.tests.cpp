@@ -83,3 +83,24 @@ TEST(Compilerx64Tests, compile_multi_args) {
             0xff, 0xd0 //call rax
         }));
 }
+
+TEST(Compilerx64Tests, compile_stack_allocation) {
+    ParsedBlock block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    InstrBufferx64 buffer;
+    compiler_x64::compile_block_prefix(block, buffer);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0xff, 0xf5, //push rbp
+            0x48, 0x89, 0xe5, //mov rbp, rsp
+            0x48, 0x81, 0xec, 0x10, 0x00, 0x00, 0x00 //sub rsp, 0x10
+        })
+    );
+}
