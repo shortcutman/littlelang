@@ -59,3 +59,20 @@ void compiler_x64::compile_block_prefix(const ParsedBlock& block, InstrBufferx64
 
     buff.sub(InstrBufferx64::Register::RSP, stackSize);
 }
+
+void compiler_x64::compile_const_assignment(const ParsedBlock& block, const VariableConstAssignment& assignment, InstrBufferx64& buff) {
+    //get stack mem loc
+    std::optional<int8_t> stackLocation;
+    for (size_t i = 0; i < block.vars.size(); i++) {
+        if (block.vars[i].name == assignment.to) {
+            stackLocation = (i + 1) * -8;
+            break;
+        }
+    }
+
+    if (stackLocation == std::nullopt) {
+        throw std::runtime_error("can't find variable");
+    }
+
+    buff.mov_stack_imm64(*stackLocation, assignment.value);
+}

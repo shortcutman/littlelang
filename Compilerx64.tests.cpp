@@ -104,3 +104,60 @@ TEST(Compilerx64Tests, compile_stack_allocation) {
         })
     );
 }
+
+TEST(Compilerx64Tests, compile_const_assignment) {
+    ParsedBlock block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    auto assign = std::make_unique<VariableConstAssignment>();
+    VariableConstAssignment* rawAssign = assign.get();
+    assign->to = "test";
+    assign->value = 1234;
+    block.statements.push_back(std::move(assign));
+
+    InstrBufferx64 buffer;
+    compiler_x64::compile_const_assignment(block, *rawAssign, buffer);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0xb8, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, imm64
+            0x48, 0x89, 0x45, 0xf8 //mov [rbp - 0x8], rax
+        })
+    );
+}
+
+TEST(Compilerx64Tests, compile_const_assignment_second_var) {
+    ParsedBlock block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    VariableDefinition def2;
+    def2.name = "test2";
+    def2.type = VariableDefinition::Int64;
+    block.vars.push_back(def2);
+
+    auto assign = std::make_unique<VariableConstAssignment>();
+    VariableConstAssignment* rawAssign = assign.get();
+    assign->to = "test2";
+    assign->value = 1234;
+    block.statements.push_back(std::move(assign));
+
+    InstrBufferx64 buffer;
+    compiler_x64::compile_const_assignment(block, *rawAssign, buffer);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0xb8, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, imm64
+            0x48, 0x89, 0x45, 0xf0 //mov [rbp - 0x8], rax
+        })
+    );
+}
