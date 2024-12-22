@@ -40,7 +40,7 @@ public:
     void push(Register src);
     void pop(Register dest);
     void mov(Register dest, Register src);
-    void sub(Register dest, std::uint32_t value);
+    void sub(Register dest, std::int32_t value);
 
 private:
     void push_rexw();

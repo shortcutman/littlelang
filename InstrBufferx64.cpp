@@ -82,11 +82,11 @@ void InstrBufferx64::mov(Register dest, Register src) {
     push_modrm(3, /* regop src */ src, /* rm dest */ dest);
 }
 
-void InstrBufferx64::sub(Register dest, std::uint32_t value) {
+void InstrBufferx64::sub(Register dest, std::int32_t value) {
     push_rexw();
     push_byte(0x81);
     push_modrm(3, 5, dest);
-    push_dword(value);
+    push_dword(*reinterpret_cast<uint32_t*>(&value));
 }
 
 void InstrBufferx64::push_rexw() {
