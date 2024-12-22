@@ -11,7 +11,6 @@
 #include <gtest/gtest.h>
 
 TEST(ParsedBlock, parse_many) {
-    // std::string eg = R"(int32 test;test = 123;)";
     std::string_view view(R"(int32 test;test = 123;)");
 
     ParsedBlock block;
