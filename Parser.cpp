@@ -66,7 +66,7 @@ FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
         if (std::isdigit(token[0])) {
             //integer
             std::string valueChars(token);
-            auto param = std::make_unique<Int32Param>();
+            auto param = std::make_unique<Int64Param>();
             param->content = std::atoi(valueChars.c_str());
             call->params.push_back(std::move(param));
         } else if (token[0] == '"') {

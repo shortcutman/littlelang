@@ -45,7 +45,7 @@ TEST(Parser, printf_two_args) {
     EXPECT_NE(stringparam, nullptr);
     EXPECT_EQ(stringparam->content, "test %i \n");
 
-    auto intparam = dynamic_cast<Int32Param*>(call->params[1].get());
+    auto intparam = dynamic_cast<Int64Param*>(call->params[1].get());
     EXPECT_NE(intparam, nullptr);
     EXPECT_EQ(intparam->content, 123);
 }

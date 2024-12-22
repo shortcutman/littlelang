@@ -28,10 +28,10 @@ struct StringParam : public Param {
     std::string content;
 };
 
-struct Int32Param : public Param {
-    virtual ~Int32Param() = default;
+struct Int64Param : public Param {
+    virtual ~Int64Param() = default;
 
-    std::int32_t content;
+    std::int64_t content;
 };
 
 struct Statement {
