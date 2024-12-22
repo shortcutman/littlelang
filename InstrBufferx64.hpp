@@ -34,9 +34,14 @@ public:
     void call_r64(Register dest);
     void ret();
 
+    void push(Register src);
+    void mov(Register dest, Register src);
+    void sub(Register dest, std::uint32_t value);
+
 private:
     void push_rexw();
     void push_modrm(uint8_t mod, uint8_t regop, uint8_t rm);
     void push_byte(uint8_t byte);
+    void push_dword(uint32_t dword);
     void push_qword(uint64_t qword);
 };

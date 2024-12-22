@@ -38,6 +38,24 @@ void InstrBufferx64::ret() {
     push_byte(0xc3);
 }
 
+void InstrBufferx64::push(Register src) {
+    push_byte(0xff);
+    push_modrm(3, 6, static_cast<int>(src) & 0x03);
+}
+
+void InstrBufferx64::mov(Register dest, Register src) {
+    push_rexw();
+    push_byte(0x89);
+    push_modrm(3, /* regop src */ src, /* rm dest */ dest);
+}
+
+void InstrBufferx64::sub(Register dest, std::uint32_t value) {
+    push_rexw();
+    push_byte(0x81);
+    push_modrm(3, 5, dest);
+    push_dword(value);
+}
+
 void InstrBufferx64::push_rexw() {
     uint8_t byte = 0b01001000;
     push_byte(byte);
@@ -53,6 +71,13 @@ void InstrBufferx64::push_modrm(uint8_t mod, uint8_t regop, uint8_t rm) {
 
 void InstrBufferx64::push_byte(uint8_t byte) {
     _buffer.push_back(byte);
+}
+
+void InstrBufferx64::push_dword(uint32_t dword) {
+    push_byte(dword & 0xff);
+    push_byte((dword >> 8) & 0xff);
+    push_byte((dword >> 16) & 0xff);
+    push_byte((dword >> 24) & 0xff);
 }
 
 void InstrBufferx64::push_qword(uint64_t qword) {
