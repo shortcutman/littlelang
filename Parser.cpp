@@ -41,48 +41,55 @@ void ParsedBlock::parse_block(std::string_view input) {
 
 FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
     auto call = std::make_unique<FunctionCall>();
-    std::string currentToken;
-    auto it = input.begin();
-    for (; it != input.end(); it++) {
-        char c = *it;
-        if (c == '(') {
-            break;
-        } else {
-            currentToken += c;
-        }
+
+    auto nameEnd = input.find_first_of("(");
+    if (nameEnd == std::string_view::npos) {
+        throw std::runtime_error("Not a function call.");
     }
-    call->functionName = currentToken;
+    call->functionName = input.substr(0, nameEnd);
+    input.remove_prefix(nameEnd + 1);
 
     void* dlHandle = dlopen(0, RTLD_NOW);
-    void* function = dlsym(dlHandle, currentToken.c_str());
+    void* function = dlsym(dlHandle, call->functionName.c_str());
     if (!function) {
         throw std::runtime_error("Unknown function name.");
     }
     call->functionAddr = function;
 
-    it++;
-    currentToken = "";
-    bool stringOpen = false;
-    for (; it != input.end(); it++) {
-        char c = *it;
-        if (c == '"') {
-            if (!stringOpen) {
-                stringOpen = true;
-                continue;
-            } else {
-                //close it
-                break;
-            }
+    auto tokenEnd = input.find_first_of(",)");
+    while (tokenEnd != std::string_view::npos) {
+        auto token = input.substr(0, tokenEnd);
+        while (std::isspace(token[0])) {
+            token.remove_prefix(1);
         }
 
-        currentToken += c;
+        if (std::isdigit(token[0])) {
+            //integer
+            std::string valueChars(token);
+            auto param = std::make_unique<Int32Param>();
+            param->content = std::atoi(valueChars.c_str());
+            call->params.push_back(std::move(param));
+        } else if (token[0] == '"') {
+            //string start
+            token.remove_prefix(1);
+            auto stringEnd = token.find_first_of('"');
+            auto param = std::make_unique<StringParam>();
+            param->content = std::string(token.substr(0, stringEnd));
+            
+            //todo: refactor away
+            string_heap.push_back(param->content);
+            call->param = reinterpret_cast<void*>(const_cast<char*>(string_heap.back().c_str()));
+
+            call->params.push_back(std::move(param));
+        } else {
+            throw std::runtime_error("Unexpected character.");
+        }
+
+        input.remove_prefix(tokenEnd + 1);
+        tokenEnd = input.find_first_of(",)");
     }
 
-    string_heap.push_back(currentToken);
-    call->param = reinterpret_cast<void*>(const_cast<char*>(string_heap.back().c_str()));
-
-    it++;
-    if (*it != ')') {
+    if (input[0] != ';') {
         throw std::runtime_error("Unexpected character.");
     }
 

@@ -18,6 +18,22 @@ struct VariableDefinition {
     Type type;
 };
 
+struct Param {
+    virtual ~Param() = default;
+};
+
+struct StringParam : public Param {
+    virtual ~StringParam() = default;
+
+    std::string content;
+};
+
+struct Int32Param : public Param {
+    virtual ~Int32Param() = default;
+
+    std::int32_t content;
+};
+
 struct Statement {
     virtual ~Statement() = default;
 };
@@ -28,6 +44,8 @@ struct FunctionCall : public Statement {
     std::string functionName;
     void* functionAddr;
     void* param;
+
+    std::vector<std::unique_ptr<Param>> params;
 };
 typedef std::unique_ptr<FunctionCall> FunctionCallPtr;
 
