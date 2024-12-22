@@ -31,6 +31,7 @@ public:
     std::vector<std::uint8_t> buffer() const;
 
     void mov_r64_imm64(Register dest, std::uint64_t input);
+    void mov_stack_imm64(std::int8_t adjust, std::uint64_t value);
     void call_r64(Register dest);
     void ret();
 

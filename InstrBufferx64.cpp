@@ -29,6 +29,17 @@ void InstrBufferx64::mov_r64_imm64(Register dest, std::uint64_t input) {
     push_qword(input);
 }
 
+void InstrBufferx64::mov_stack_imm64(std::int8_t adjust, std::uint64_t value) {
+    push_rexw();
+    push_byte(0xb8 + (static_cast<uint8_t>(Register::RAX) & 0x07));
+    push_qword(value);
+
+    push_rexw();
+    push_byte(0x89);
+    push_modrm(1, Register::RAX, Register::RBP);
+    push_byte(*reinterpret_cast<uint8_t*>(&adjust));
+}
+
 void InstrBufferx64::call_r64(Register dest) {
     push_byte(0xff);
     push_modrm(3, 2, static_cast<int>(dest) & 0x07);
