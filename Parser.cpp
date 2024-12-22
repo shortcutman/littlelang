@@ -49,7 +49,7 @@ void ParsedBlock::parse_block(std::string_view input) {
             //assignment
             auto step2 = input.find_first_of(";");
             std::string_view statement(input.begin(), input.begin() + step2 + 1);
-            auto assignment = parse_variable_const_assignment(statement);
+            auto assignment = parse_variable_assignment(statement);
             statements.push_back(std::move(assignment));
             input.remove_prefix(step2 + 1);
         } else if (input[step] == ';') {
@@ -150,8 +150,8 @@ VariableDefinition ParsedBlock::parse_variable_definition(std::string_view input
     return def;
 }
 
-VariableConstAssignmentPtr ParsedBlock::parse_variable_const_assignment(std::string_view input) {
-    auto assign = std::make_unique<VariableConstAssignment>();
+VariableAssignmentPtr ParsedBlock::parse_variable_assignment(std::string_view input) {
+    auto assign = std::make_unique<VariableAssignment>();
 
     auto splitter = input.find_first_of('=');
     auto assignTo = input.substr(0, splitter);
@@ -159,14 +159,17 @@ VariableConstAssignmentPtr ParsedBlock::parse_variable_const_assignment(std::str
     if (haswhitespace(assignTo)) {
         throw std::runtime_error("Unexpected whitespace.");
     }
-    assign->to = assignTo;
+    assign->to.content = assignTo;
 
     input.remove_prefix(splitter + 1);
 
     auto end = input.find_first_of(';');
     auto constant = input.substr(0, end);
     trim_sides(constant);
-    assign->value = atoi(std::string(constant).c_str());
+
+    auto value = std::make_unique<Int64Param>();
+    value->content = atoi(std::string(constant).c_str());
+    assign->value = std::move(value);
 
     return assign;
 }

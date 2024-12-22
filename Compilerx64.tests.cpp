@@ -209,7 +209,7 @@ TEST(Compilerx64Tests, compile_block_suffix_16byte_stack) {
     );
 }
 
-TEST(Compilerx64Tests, compile_const_assignment) {
+TEST(Compilerx64Tests, compile_assignment_const_int64) {
     ParsedBlock block;
 
     VariableDefinition def;
@@ -217,14 +217,16 @@ TEST(Compilerx64Tests, compile_const_assignment) {
     def.type = VariableDefinition::Int64;
     block.vars.push_back(def);
 
-    auto assign = std::make_unique<VariableConstAssignment>();
-    VariableConstAssignment* rawAssign = assign.get();
-    assign->to = "test";
-    assign->value = 1234;
+    auto assign = std::make_unique<VariableAssignment>();
+    VariableAssignment* rawAssign = assign.get();
+    assign->to.content = "test";
+    auto value = std::make_unique<Int64Param>();
+    value->content = 1234;
+    assign->value = std::move(value);
     block.statements.push_back(std::move(assign));
 
     InstrBufferx64 buffer;
-    compiler_x64::compile_const_assignment(block, *rawAssign, buffer);
+    compiler_x64::compile_assignment(block, *rawAssign, buffer);
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -235,7 +237,7 @@ TEST(Compilerx64Tests, compile_const_assignment) {
     );
 }
 
-TEST(Compilerx64Tests, compile_const_assignment_second_var) {
+TEST(Compilerx64Tests, compile_assignment_const_int64_by_two) {
     ParsedBlock block;
 
     VariableDefinition def;
@@ -248,14 +250,16 @@ TEST(Compilerx64Tests, compile_const_assignment_second_var) {
     def2.type = VariableDefinition::Int64;
     block.vars.push_back(def2);
 
-    auto assign = std::make_unique<VariableConstAssignment>();
-    VariableConstAssignment* rawAssign = assign.get();
-    assign->to = "test2";
-    assign->value = 1234;
+    auto assign = std::make_unique<VariableAssignment>();
+    VariableAssignment* rawAssign = assign.get();
+    assign->to.content = "test2";
+    auto value = std::make_unique<Int64Param>();
+    value->content = 1234;
+    assign->value = std::move(value);
     block.statements.push_back(std::move(assign));
 
     InstrBufferx64 buffer;
-    compiler_x64::compile_const_assignment(block, *rawAssign, buffer);
+    compiler_x64::compile_assignment(block, *rawAssign, buffer);
 
     EXPECT_EQ(
         buffer.buffer(),

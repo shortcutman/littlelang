@@ -76,10 +76,14 @@ TEST(Parser, parse_variable_definition) {
     EXPECT_EQ(definition.type, VariableDefinition::Int64);
 }
 
-TEST(Parser, parse_variable_const_assignment) {
+TEST(Parser, parse_variable_assignment_to_const) {
     std::string eg = R"(test = 123;)";
     ParsedBlock p;
-    auto assign = p.parse_variable_const_assignment(eg);
-    EXPECT_EQ(assign->to, "test");
-    EXPECT_EQ(assign->value, 123);
+    auto assign = p.parse_variable_assignment(eg);
+
+    EXPECT_EQ(assign->to.content, "test");
+
+    auto value = dynamic_cast<Int64Param*>(assign->value.get());
+    ASSERT_NE(value, nullptr);
+    EXPECT_EQ(value->content, 123);
 }

@@ -22,9 +22,9 @@ void compiler_x64::compile_block(const ParsedBlock& block, InstrBufferx64& buff)
             continue;
         }
 
-        auto assign = dynamic_cast<VariableConstAssignment*>(statement.get());
+        auto assign = dynamic_cast<VariableAssignment*>(statement.get());
         if (assign != nullptr) {
-            compile_const_assignment(block, *assign, buff);
+            compile_assignment(block, *assign, buff);
             continue;
         }
     }
@@ -110,11 +110,11 @@ void compiler_x64::compile_block_suffix(const ParsedBlock& block, InstrBufferx64
     buff.ret();
 }
 
-void compiler_x64::compile_const_assignment(const ParsedBlock& block, const VariableConstAssignment& assignment, InstrBufferx64& buff) {
+void compiler_x64::compile_assignment(const ParsedBlock& block, const VariableAssignment& assignment, InstrBufferx64& buff) {
     //get stack mem loc
     std::optional<int8_t> stackLocation;
     for (size_t i = 0; i < block.vars.size(); i++) {
-        if (block.vars[i].name == assignment.to) {
+        if (block.vars[i].name == assignment.to.content) {
             stackLocation = (i + 1) * -8;
             break;
         }
@@ -124,5 +124,11 @@ void compiler_x64::compile_const_assignment(const ParsedBlock& block, const Vari
         throw std::runtime_error("can't find variable");
     }
 
-    buff.mov_stack_imm64(*stackLocation, assignment.value);
+    auto value = dynamic_cast<Int64Param*>(assignment.value.get());
+    if (value) {
+        buff.mov_stack_imm64(*stackLocation, value->content);
+        return;
+    }
+
+    throw std::runtime_error("Unknown parameter in variable assignment.");
 }

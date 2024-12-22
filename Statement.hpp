@@ -43,10 +43,10 @@ struct FunctionCall : public Statement {
 };
 typedef std::unique_ptr<FunctionCall> FunctionCallPtr;
 
-struct VariableConstAssignment : public Statement {
-    virtual ~VariableConstAssignment() = default;
+struct VariableAssignment : public Statement {
+    virtual ~VariableAssignment() = default;
 
-    std::string to;
-    std::uint64_t value;
+    StackVariableParam to;
+    std::unique_ptr<Param> value;
 };
-typedef std::unique_ptr<VariableConstAssignment> VariableConstAssignmentPtr;
+typedef std::unique_ptr<VariableAssignment> VariableAssignmentPtr;
