@@ -5,18 +5,11 @@
 
 #pragma once
 
+#include "Variables.hpp"
+
 #include <cstdint>
 #include <string>
 #include <vector>
-
-struct VariableDefinition {
-    enum Type {
-        Int64
-    };
-
-    std::string name;
-    Type type;
-};
 
 struct Param {
     virtual ~Param() = default;
