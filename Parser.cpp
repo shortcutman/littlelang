@@ -8,6 +8,25 @@
 
 #include <dlfcn.h>
 
+namespace {
+    void trim_left(std::string_view& view) {
+        while (std::isspace(view[0])) {
+            view.remove_prefix(1);
+        }
+    }
+
+    void trim_right(std::string_view& view) {
+        while (std::isspace(view[view.size() - 1])) {
+            view.remove_suffix(1);
+        }
+    }
+
+    void trim_sides(std::string_view& view) {
+        trim_left(view);
+        trim_right(view);
+    }
+}
+
 void ParsedBlock::parse_block(std::string_view input) {
     std::array<char, 3> steps = { '(', '=', ' ' };
 
@@ -121,25 +140,6 @@ VariableDefinition ParsedBlock::parse_variable_definition(std::string_view input
     def.name = currentsymbol;
 
     return def;
-}
-
-namespace {
-    void trim_left(std::string_view& view) {
-        while (std::isspace(view[0])) {
-            view.remove_prefix(1);
-        }
-    }
-
-    void trim_right(std::string_view& view) {
-        while (std::isspace(view[view.size() - 1])) {
-            view.remove_suffix(1);
-        }
-    }
-
-    void trim_sides(std::string_view& view) {
-        trim_left(view);
-        trim_right(view);
-    }
 }
 
 VariableConstAssignmentPtr ParsedBlock::parse_variable_const_assignment(std::string_view input) {
