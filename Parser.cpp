@@ -105,7 +105,7 @@ FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
         } else {
             trim_right(token);
             if (haswhitespace(token)) {
-                throw std::runtime_error("unexpected whitesapce");
+                throw std::runtime_error("unexpected whitespace");
             }
 
             auto param = std::make_unique<StackVariableParam>();
@@ -164,12 +164,34 @@ VariableAssignmentPtr ParsedBlock::parse_variable_assignment(std::string_view in
     input.remove_prefix(splitter + 1);
 
     auto end = input.find_first_of(';');
-    auto constant = input.substr(0, end);
-    trim_sides(constant);
+    auto value = input.substr(0, end);
+    trim_left(value);
 
-    auto value = std::make_unique<Int64Param>();
-    value->content = atoi(std::string(constant).c_str());
-    assign->value = std::move(value);
+    auto valueDetermine = value.find_first_of("+%");
+    if (valueDetermine != std::string_view::npos) {
+        //operation
+        throw std::runtime_error("unimplemented");
+    } else if (std::isdigit(value[0])) { //integer constant
+        trim_right(value);
+        if (haswhitespace(value)) {
+            throw std::runtime_error("unexpected whitespace");
+        }
+
+        auto param = std::make_unique<Int64Param>();
+        param->content = atoi(std::string(value).c_str());
+        assign->value = std::move(param);
+    } else if (value[0] == '"') { //string
+        throw std::runtime_error("unimplemented");
+    } else { //variable name
+        trim_right(value);
+        if (haswhitespace(value)) {
+            throw std::runtime_error("unexpected whitespace");
+        }
+
+        auto param = std::make_unique<StackVariableParam>();
+        param->content = value;
+        assign->value = std::move(param);
+    }
 
     return assign;
 }

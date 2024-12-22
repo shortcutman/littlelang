@@ -87,3 +87,15 @@ TEST(Parser, parse_variable_assignment_to_const) {
     ASSERT_NE(value, nullptr);
     EXPECT_EQ(value->content, 123);
 }
+
+TEST(Parser, parse_variable_assignment_to_variable) {
+    std::string eg = R"(test = another;)";
+    ParsedBlock p;
+    auto assign = p.parse_variable_assignment(eg);
+
+    EXPECT_EQ(assign->to.content, "test");
+
+    auto value = dynamic_cast<StackVariableParam*>(assign->value.get());
+    ASSERT_NE(value, nullptr);
+    EXPECT_EQ(value->content, "another");
+}
