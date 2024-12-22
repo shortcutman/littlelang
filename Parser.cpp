@@ -126,10 +126,10 @@ VariableDefinition ParsedBlock::parse_variable_definition(std::string_view input
     auto splitter = input.find_first_of(' ');
     auto type = input.substr(0, splitter);
 
-    if (type != "int32") {
+    if (type != "int64") {
         throw std::runtime_error("unexpected type");
     }
-    def.type = VariableDefinition::Int32;
+    def.type = VariableDefinition::Int64;
     input.remove_prefix(splitter + 1);
 
     splitter = input.find_first_of(';');

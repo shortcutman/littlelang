@@ -11,14 +11,14 @@
 #include <gtest/gtest.h>
 
 TEST(ParsedBlock, parse_many) {
-    std::string_view view(R"(int32 test;test = 123;)");
+    std::string_view view(R"(int64 test;test = 123;)");
 
     ParsedBlock block;
     block.parse_block(view);
 
     EXPECT_EQ(block.vars.size(), 1);
     EXPECT_EQ(block.vars.front().name, "test");
-    EXPECT_EQ(block.vars.front().type, VariableDefinition::Int32);
+    EXPECT_EQ(block.vars.front().type, VariableDefinition::Int64);
 
     EXPECT_EQ(block.statements.size(), 1);
 
@@ -29,7 +29,7 @@ TEST(ParsedBlock, parse_many) {
 }
 
 TEST(ParsedBlock, parse_many2) {
-    std::string eg = R"(int32 test;int32 another;test = 123;another = 1111;)";
+    std::string eg = R"(int64 test;int64 another;test = 123;another = 1111;)";
     std::string_view view(eg);
 
     ParsedBlock block;
@@ -37,9 +37,9 @@ TEST(ParsedBlock, parse_many2) {
 
     EXPECT_EQ(block.vars.size(), 2);
     EXPECT_EQ(block.vars[0].name, "test");
-    EXPECT_EQ(block.vars[0].type, VariableDefinition::Int32);
+    EXPECT_EQ(block.vars[0].type, VariableDefinition::Int64);
     EXPECT_EQ(block.vars[1].name, "another");
-    EXPECT_EQ(block.vars[1].type, VariableDefinition::Int32);
+    EXPECT_EQ(block.vars[1].type, VariableDefinition::Int64);
 
     EXPECT_EQ(block.statements.size(), 2);
 
@@ -55,7 +55,7 @@ TEST(ParsedBlock, parse_many2) {
 }
 
 TEST(ParsedBlock, parse_many3) {
-    std::string eg = R"(int32 test;test = 123;int32 another;another = 1111;)";
+    std::string eg = R"(int64 test;test = 123;int64 another;another = 1111;)";
     std::string_view view(eg);
 
     ParsedBlock block;
@@ -63,9 +63,9 @@ TEST(ParsedBlock, parse_many3) {
 
     EXPECT_EQ(block.vars.size(), 2);
     EXPECT_EQ(block.vars[0].name, "test");
-    EXPECT_EQ(block.vars[0].type, VariableDefinition::Int32);
+    EXPECT_EQ(block.vars[0].type, VariableDefinition::Int64);
     EXPECT_EQ(block.vars[1].name, "another");
-    EXPECT_EQ(block.vars[1].type, VariableDefinition::Int32);
+    EXPECT_EQ(block.vars[1].type, VariableDefinition::Int64);
 
     EXPECT_EQ(block.statements.size(), 2);
 
@@ -82,7 +82,7 @@ TEST(ParsedBlock, parse_many3) {
 
 TEST(ParsedBlock, parse_whitespace1) {
     std::string eg =
-        R"(int32 test;
+        R"(int64 test;
         test = 123;)";
     std::string_view view(eg);
 
@@ -91,7 +91,7 @@ TEST(ParsedBlock, parse_whitespace1) {
 
     EXPECT_EQ(block.vars.size(), 1);
     EXPECT_EQ(block.vars.front().name, "test");
-    EXPECT_EQ(block.vars.front().type, VariableDefinition::Int32);
+    EXPECT_EQ(block.vars.front().type, VariableDefinition::Int64);
 
     EXPECT_EQ(block.statements.size(), 1);
 
@@ -103,9 +103,9 @@ TEST(ParsedBlock, parse_whitespace1) {
 
 TEST(ParsedBlock, parse_whitespace2) {
     std::string eg = R"(
-    int32 test;
+    int64 test;
     test = 123;
-    int32 another;
+    int64 another;
     another = 1111;)";
     std::string_view view(eg);
 
@@ -114,9 +114,9 @@ TEST(ParsedBlock, parse_whitespace2) {
 
     EXPECT_EQ(block.vars.size(), 2);
     EXPECT_EQ(block.vars[0].name, "test");
-    EXPECT_EQ(block.vars[0].type, VariableDefinition::Int32);
+    EXPECT_EQ(block.vars[0].type, VariableDefinition::Int64);
     EXPECT_EQ(block.vars[1].name, "another");
-    EXPECT_EQ(block.vars[1].type, VariableDefinition::Int32);
+    EXPECT_EQ(block.vars[1].type, VariableDefinition::Int64);
 
     EXPECT_EQ(block.statements.size(), 2);
 

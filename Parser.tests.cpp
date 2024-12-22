@@ -68,12 +68,12 @@ TEST(Parser, parse_function_call_stack_argument) {
 }
 
 TEST(Parser, parse_variable_definition) {
-    std::string eg = R"(int32 test;)";
+    std::string eg = R"(int64 test;)";
     ParsedBlock p;
     auto definition = p.parse_variable_definition(eg);
 
     EXPECT_EQ(definition.name, "test");
-    EXPECT_EQ(definition.type, VariableDefinition::Int32);
+    EXPECT_EQ(definition.type, VariableDefinition::Int64);
 }
 
 TEST(Parser, parse_variable_const_assignment) {

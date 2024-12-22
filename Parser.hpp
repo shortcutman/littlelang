@@ -11,7 +11,7 @@
 
 struct VariableDefinition {
     enum Type {
-        Int32
+        Int64
     };
 
     std::string name;
@@ -56,7 +56,7 @@ struct VariableConstAssignment : public Statement {
     virtual ~VariableConstAssignment() = default;
 
     std::string to;
-    std::uint32_t value;
+    std::uint64_t value;
 };
 typedef std::unique_ptr<VariableConstAssignment> VariableConstAssignmentPtr;
 
