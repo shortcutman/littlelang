@@ -34,6 +34,11 @@ struct Int64Param : public Param {
     std::int64_t content;
 };
 
+struct StackVariableParam : public Param {
+    virtual ~StackVariableParam() = default;
+    std::string content;
+};
+
 struct Statement {
     virtual ~Statement() = default;
 };

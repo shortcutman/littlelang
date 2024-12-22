@@ -98,7 +98,14 @@ FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
             param->content = std::string(token.substr(0, stringEnd));
             call->params.push_back(std::move(param));
         } else {
-            throw std::runtime_error("Unexpected character.");
+            trim_right(token);
+            if (haswhitespace(token)) {
+                throw std::runtime_error("unexpected whitesapce");
+            }
+
+            auto param = std::make_unique<StackVariableParam>();
+            param->content = token;
+            call->params.push_back(std::move(param));
         }
 
         input.remove_prefix(tokenEnd + 1);
