@@ -13,7 +13,7 @@ private:
     std::vector<std::uint8_t> _buffer;
 
 public:
-    enum Register {
+    enum class Register {
         RAX = 0,
         RCX = 1,
         RDX = 2,
@@ -41,6 +41,8 @@ public:
 private:
     void push_rexw();
     void push_modrm(uint8_t mod, uint8_t regop, uint8_t rm);
+    void push_modrm(uint8_t mod, uint8_t regop, Register rm);
+    void push_modrm(uint8_t mod, Register regop, Register rm);
     void push_byte(uint8_t byte);
     void push_dword(uint32_t dword);
     void push_qword(uint64_t qword);

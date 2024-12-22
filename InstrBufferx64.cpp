@@ -69,6 +69,14 @@ void InstrBufferx64::push_modrm(uint8_t mod, uint8_t regop, uint8_t rm) {
     push_byte(byte);
 }
 
+void InstrBufferx64::push_modrm(uint8_t mod, uint8_t regop, Register rm) {
+    push_modrm(mod, regop, static_cast<int>(rm));
+}
+
+void InstrBufferx64::push_modrm(uint8_t mod, Register regop, Register rm) {
+    push_modrm(mod, static_cast<int>(regop), static_cast<int>(rm));
+}
+
 void InstrBufferx64::push_byte(uint8_t byte) {
     _buffer.push_back(byte);
 }
