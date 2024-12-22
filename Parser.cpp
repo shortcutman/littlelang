@@ -36,13 +36,15 @@ void ParsedBlock::parse_block(std::string_view input) {
 
     while (!input.empty()) {
         auto step = input.find_first_of("(=;");
-        if (input[step] == '(') {
+        if (step == std::string_view::npos) {
+            break;
+        } else if (input[step] == '(') {
             //function call
             auto step2 = input.find_first_of(";");
             std::string_view statement(input.begin(), input.begin() + step2 + 1);
             auto call = parse_function_call(statement);
             statements.push_back(std::move(call));
-            input.remove_prefix(step + 1);
+            input.remove_prefix(step2 + 1);
         } else if (input[step] == '=') {
             //assignment
             auto step2 = input.find_first_of(";");
@@ -69,7 +71,10 @@ FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
     if (nameEnd == std::string_view::npos) {
         throw std::runtime_error("Not a function call.");
     }
-    call->functionName = input.substr(0, nameEnd);
+
+    auto name = input.substr(0, nameEnd);
+    trim_sides(name);
+    call->functionName = name;
     input.remove_prefix(nameEnd + 1);
 
     void* dlHandle = dlopen(0, RTLD_NOW);
@@ -125,6 +130,7 @@ VariableDefinition ParsedBlock::parse_variable_definition(std::string_view input
     trim_left(input);
     auto splitter = input.find_first_of(' ');
     auto type = input.substr(0, splitter);
+    trim_sides(type);
 
     if (type != "int64") {
         throw std::runtime_error("unexpected type");

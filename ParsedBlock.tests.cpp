@@ -80,6 +80,27 @@ TEST(ParsedBlock, parse_many3) {
     EXPECT_EQ(assign2->value, 1111);
 }
 
+TEST(ParsedBlock, parse_many4) {
+    std::string eg = R"(int64 test;puts("test");int64 another;)";
+    std::string_view view(eg);
+
+    ParsedBlock block;
+    block.parse_block(view);
+
+    EXPECT_EQ(block.vars.size(), 2);
+    EXPECT_EQ(block.vars[0].name, "test");
+    EXPECT_EQ(block.vars[0].type, VariableDefinition::Int64);
+    EXPECT_EQ(block.vars[1].name, "another");
+    EXPECT_EQ(block.vars[1].type, VariableDefinition::Int64);
+
+    EXPECT_EQ(block.statements.size(), 1);
+
+    auto assign1 = dynamic_cast<FunctionCall*>(block.statements[0].get());
+    EXPECT_NE(assign1, nullptr);
+    EXPECT_EQ(assign1->functionName, "puts");
+    EXPECT_EQ(assign1->params.size(), 1);
+}
+
 TEST(ParsedBlock, parse_whitespace1) {
     std::string eg =
         R"(int64 test;
