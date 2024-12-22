@@ -8,6 +8,10 @@
 #include <sys/mman.h>
 
 void InstrBufferx64::execute() {
+    if (_buffer.empty()) {
+        return;
+    }
+
     void* exememory = mmap(NULL,
         _buffer.size(),
         PROT_READ | PROT_WRITE | PROT_EXEC,
