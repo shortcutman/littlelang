@@ -64,6 +64,14 @@ TEST(InstrBufferx64, push_rbp) {
         std::vector<uint8_t>({0xff, 0xf5}));
 }
 
+TEST(InstrBufferx64, pop_rbp) {
+    InstrBufferx64 b;
+    b.pop(InstrBufferx64::Register::RBP);
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({0x5d}));
+}
+
 TEST(InstrBufferx64, mov_rbp_rsp) {
     InstrBufferx64 b;
     b.mov(InstrBufferx64::Register::RBP, InstrBufferx64::Register::RSP);
@@ -78,4 +86,12 @@ TEST(InstrBufferx64, sub_rsp_0x10) {
     EXPECT_EQ(
         b.buffer(),
         std::vector<uint8_t>({0x48, 0x81, 0xec, 0x10, 0x00, 0x00, 0x00}));
+}
+
+TEST(InstrBufferx64, add_r64_imm32) {
+    InstrBufferx64 b;
+    b.add_r64_imm32(InstrBufferx64::Register::RSP, 0x10);
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({0x48, 0x81, 0xc4, 0x10, 0x00, 0x00, 0x00}));
 }

@@ -34,9 +34,11 @@ public:
     void mov_stack_imm64(std::int8_t adjust, std::uint64_t value);
     void mov_r64_stack(Register dest, std::int8_t adjust);
     void call_r64(Register dest);
+    void add_r64_imm32(Register dest, std::int32_t value);
     void ret();
 
     void push(Register src);
+    void pop(Register dest);
     void mov(Register dest, Register src);
     void sub(Register dest, std::uint32_t value);
 
