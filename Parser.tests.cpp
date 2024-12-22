@@ -18,8 +18,6 @@ TEST(Parser, parse_function_call) {
     void* putsaddr = dlsym(dlHandle, "puts");
 
     EXPECT_EQ(call->functionAddr, putsaddr);
-    EXPECT_EQ(call->param, p.string_heap.back().c_str());
-    EXPECT_TRUE(strcmp(p.string_heap.back().c_str(), "test") == 0);
 
     auto stringparam = dynamic_cast<StringParam*>(call->params[0].get());
     EXPECT_NE(stringparam, nullptr);
@@ -36,8 +34,6 @@ TEST(Parser, printf_two_args) {
     void* printfaddr = dlsym(dlHandle, "printf");
 
     EXPECT_EQ(call->functionAddr, printfaddr);
-    EXPECT_EQ(call->param, p.string_heap.back().c_str());
-    EXPECT_EQ(p.string_heap.back(), "test %i \n");
 
     EXPECT_EQ(call->params.size(), 2);
 

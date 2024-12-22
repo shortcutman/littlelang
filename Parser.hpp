@@ -43,8 +43,6 @@ struct FunctionCall : public Statement {
 
     std::string functionName;
     void* functionAddr;
-    void* param;
-
     std::vector<std::unique_ptr<Param>> params;
 };
 typedef std::unique_ptr<FunctionCall> FunctionCallPtr;
@@ -59,7 +57,6 @@ typedef std::unique_ptr<VariableConstAssignment> VariableConstAssignmentPtr;
 
 class ParsedBlock {
 public:
-    std::vector<std::string> string_heap;
     std::vector<VariableDefinition> vars;
     std::vector<std::unique_ptr<Statement>> statements;
 

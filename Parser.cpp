@@ -75,11 +75,6 @@ FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
             auto stringEnd = token.find_first_of('"');
             auto param = std::make_unique<StringParam>();
             param->content = std::string(token.substr(0, stringEnd));
-            
-            //todo: refactor away
-            string_heap.push_back(param->content);
-            call->param = reinterpret_cast<void*>(const_cast<char*>(string_heap.back().c_str()));
-
             call->params.push_back(std::move(param));
         } else {
             throw std::runtime_error("Unexpected character.");
