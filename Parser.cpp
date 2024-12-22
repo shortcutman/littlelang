@@ -25,6 +25,10 @@ namespace {
         trim_left(view);
         trim_right(view);
     }
+
+    bool haswhitespace(const std::string_view view) {
+        return std::any_of(view.begin(), view.end(), [] (auto c) { return std::isspace(c); });
+    }
 }
 
 void ParsedBlock::parse_block(std::string_view input) {
@@ -127,7 +131,7 @@ VariableDefinition ParsedBlock::parse_variable_definition(std::string_view input
     auto name = input.substr(0, splitter);
     trim_sides(name);
 
-    if (std::any_of(name.begin(), name.end(), [] (auto c) { return std::isspace(c); })) {
+    if (haswhitespace(name)) {
         throw std::runtime_error("Unexpected whitespace.");
     }
     def.name = name;
@@ -141,7 +145,7 @@ VariableConstAssignmentPtr ParsedBlock::parse_variable_const_assignment(std::str
     auto splitter = input.find_first_of('=');
     auto assignTo = input.substr(0, splitter);
     trim_sides(assignTo);
-    if (std::any_of(assignTo.begin(), assignTo.end(), [] (auto c) { return std::isspace(c); })) {
+    if (haswhitespace(assignTo)) {
         throw std::runtime_error("Unexpected whitespace.");
     }
     assign->to = assignTo;
