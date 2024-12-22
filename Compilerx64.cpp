@@ -12,6 +12,26 @@
 
 using namespace compiler_x64;
 
+void compiler_x64::compile_block(const ParsedBlock& block, InstrBufferx64& buff) {
+    compile_block_prefix(block, buff);
+
+    for (auto& statement : block.statements) {
+        auto call = dynamic_cast<FunctionCall*>(statement.get());
+        if (call != nullptr) {
+            compile_function_call(block, *call, buff);
+            continue;
+        }
+
+        auto assign = dynamic_cast<VariableConstAssignment*>(statement.get());
+        if (assign != nullptr) {
+            compile_const_assignment(block, *assign, buff);
+            continue;
+        }
+    }
+
+    compile_block_suffix(block, buff);
+}
+
 void compiler_x64::compile_function_call(const ParsedBlock& block, const FunctionCall& call, InstrBufferx64& buff) {
     buff.mov_r64_imm64(
         InstrBufferx64::Register::RAX,
@@ -64,13 +84,28 @@ void compiler_x64::compile_block_prefix(const ParsedBlock& block, InstrBufferx64
     buff.push(InstrBufferx64::Register::RBP);
     buff.mov(InstrBufferx64::Register::RBP, InstrBufferx64::Register::RSP);
 
-    auto stackSize = block.vars.size() * 8;
+    int32_t stackSize = block.vars.size() * 8;
     auto remainder = stackSize % 16;
     if (remainder != 0) {
         stackSize += 16 - remainder;
     }
 
     buff.sub(InstrBufferx64::Register::RSP, stackSize);
+}
+
+void compiler_x64::compile_block_suffix(const ParsedBlock& block, InstrBufferx64& buff) {
+    int32_t stackSize = block.vars.size() * 8;
+    auto remainder = stackSize % 16;
+    if (remainder != 0) {
+        stackSize += 16 - remainder;
+    }
+
+    if (stackSize != 0) {
+        buff.add_r64_imm32(InstrBufferx64::Register::RSP, stackSize);
+    }
+    
+    buff.pop(InstrBufferx64::Register::RBP);
+    buff.ret();
 }
 
 void compiler_x64::compile_const_assignment(const ParsedBlock& block, const VariableConstAssignment& assignment, InstrBufferx64& buff) {
