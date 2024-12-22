@@ -82,9 +82,7 @@ FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
     auto tokenEnd = input.find_first_of(",)");
     while (tokenEnd != std::string_view::npos) {
         auto token = input.substr(0, tokenEnd);
-        while (std::isspace(token[0])) {
-            token.remove_prefix(1);
-        }
+        trim_left(token);
 
         if (std::isdigit(token[0])) {
             //integer
