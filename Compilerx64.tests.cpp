@@ -108,6 +108,67 @@ TEST(Compilerx64Tests, compile_stack_allocation) {
     );
 }
 
+TEST(Compilerx64Tests, compile_block_suffix_0byte_stack) {
+    ParsedBlock block;
+    InstrBufferx64 buffer;
+    compiler_x64::compile_block_suffix(block, buffer);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0x5d, //pop rbp
+            0xc3 //ret
+        })
+    );
+}
+
+TEST(Compilerx64Tests, compile_block_suffix_8byte_stack) {
+    ParsedBlock block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    InstrBufferx64 buffer;
+    compiler_x64::compile_block_suffix(block, buffer);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0x81, 0xc4, 0x10, 0x00, 0x00, 0x00, //add rbp, 0x10
+            0x5d, //pop rbp
+            0xc3 //ret
+        })
+    );
+}
+
+TEST(Compilerx64Tests, compile_block_suffix_16byte_stack) {
+    ParsedBlock block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    VariableDefinition def2;
+    def2.name = "test";
+    def2.type = VariableDefinition::Int64;
+    block.vars.push_back(def2);
+
+    InstrBufferx64 buffer;
+    compiler_x64::compile_block_suffix(block, buffer);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0x81, 0xc4, 0x10, 0x00, 0x00, 0x00, //add rbp, 0x10
+            0x5d, //pop rbp
+            0xc3 //ret
+        })
+    );
+}
+
 TEST(Compilerx64Tests, compile_const_assignment) {
     ParsedBlock block;
 
