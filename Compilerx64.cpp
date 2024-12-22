@@ -12,7 +12,7 @@
 
 using namespace compiler_x64;
 
-void compiler_x64::compile_function_call(const FunctionCall& call, InstrBufferx64& buff) {
+void compiler_x64::compile_function_call(const ParsedBlock& block, const FunctionCall& call, InstrBufferx64& buff) {
     buff.mov_r64_imm64(
         InstrBufferx64::Register::RAX,
         reinterpret_cast<uint64_t>(call.functionAddr));
@@ -38,6 +38,19 @@ void compiler_x64::compile_function_call(const FunctionCall& call, InstrBufferx6
         auto intparam = dynamic_cast<Int64Param*>(call.params[i].get());
         if (intparam) {
             buff.mov_r64_imm64(index_to_register[i], intparam->content);
+            continue;
+        }
+
+        auto stackparam = dynamic_cast<StackVariableParam*>(call.params[i].get());
+        if (stackparam) {
+            auto result = std::find_if(block.vars.begin(), block.vars.end(),
+                [stackparam] (const VariableDefinition& def) { return def.name == stackparam->content;});
+            if (result == block.vars.end()) {
+                throw std::runtime_error("Unknown variable");
+            }
+
+            int8_t stackLocation = (std::distance(block.vars.begin(), result) + 1) * -8;
+            buff.mov_r64_stack(index_to_register[i], stackLocation);
             continue;
         }
 

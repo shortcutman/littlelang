@@ -19,8 +19,9 @@ TEST(Compilerx64Tests, compile_function_call_with_intparam) {
     intparam->content = 0xaabbccddeeffaabb;
     call.params.push_back(std::move(intparam));
 
+    ParsedBlock block;
     InstrBufferx64 buffer;
-    compiler_x64::compile_function_call(call, buffer);
+    compiler_x64::compile_function_call(block, call, buffer);
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -41,8 +42,9 @@ TEST(Compilerx64Tests, compile_function_call_with_stringparam) {
     uint8_t* pointer = reinterpret_cast<uint8_t*>(const_cast<char*>(stringparam->content.c_str()));
     call.params.push_back(std::move(stringparam));
 
+    ParsedBlock block;
     InstrBufferx64 buffer;
-    compiler_x64::compile_function_call(call, buffer);
+    compiler_x64::compile_function_call(block, call, buffer);
 
     std::vector<uint8_t> expected;
     //mov rax, imm64
@@ -71,8 +73,9 @@ TEST(Compilerx64Tests, compile_multi_args) {
     intparam2->content = 1234;
     call.params.push_back(std::move(intparam2));
 
+    ParsedBlock block;
     InstrBufferx64 buffer;
-    compiler_x64::compile_function_call(call, buffer);
+    compiler_x64::compile_function_call(block, call, buffer);
 
     EXPECT_EQ(
         buffer.buffer(),
