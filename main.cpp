@@ -112,14 +112,39 @@ void func6() {
 }
 
 void func7() {
-    std::string example = R"(puts("func7"))";
+    std::string example = R"(puts("func7");)";
 
     ParsedBlock p;
     auto call = p.parse_function_call(example);
     InstrBufferx64 i;
-    compiler_x64::compile_function_call(*call, i);
+    compiler_x64::compile_function_call(p, *call, i);
     i.ret();
     
+    i.execute();
+}
+
+void func8() {
+    std::string eg = R"(printf("test %i", 123);)";
+
+    ParsedBlock p;
+    auto call = p.parse_function_call(eg);
+    InstrBufferx64 i;
+    compiler_x64::compile_function_call(p, *call, i);
+    i.ret();
+    i.execute();
+}
+
+void func9() {
+    std::string eg = R"(
+    int64 test;
+    test = 1234;
+    printf("test %i", test);
+    )";
+
+    ParsedBlock p;
+    p.parse_block(eg);
+    InstrBufferx64 i;
+    compiler_x64::compile_block(p, i);
     i.execute();
 }
 
@@ -131,5 +156,7 @@ int main() {
     func5();
     func6();
     func7();
+    func8();
+    func9();
     return 0;
 }
