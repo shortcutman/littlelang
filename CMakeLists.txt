@@ -32,6 +32,7 @@ add_executable(
     InstrBufferx64.cpp
     InstrBufferx64.tests.cpp
     Parser.cpp
+    ParsedBlock.tests.cpp
     Parser.tests.cpp
 )
 target_link_libraries(

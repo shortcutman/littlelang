@@ -42,9 +42,14 @@ typedef std::unique_ptr<VariableConstAssignment> VariableConstAssignmentPtr;
 class ParsedBlock {
 public:
     std::vector<std::string> string_heap;
+    std::vector<VariableDefinition> vars;
+    std::vector<std::unique_ptr<Statement>> statements;
 
 public:
-    FunctionCallPtr parse_function_call(std::string_view input);
+    void parse_block(std::string_view input);
+
     VariableDefinition parse_variable_definition(std::string_view input);
+
+    FunctionCallPtr parse_function_call(std::string_view input);
     VariableConstAssignmentPtr parse_variable_const_assignment(std::string_view input);
 };

@@ -8,6 +8,37 @@
 
 #include <dlfcn.h>
 
+void ParsedBlock::parse_block(std::string_view input) {
+    std::array<char, 3> steps = { '(', '=', ' ' };
+
+    while (!input.empty()) {
+        auto step = input.find_first_of("(=;");
+        if (input[step] == '(') {
+            //function call
+            auto step2 = input.find_first_of(";");
+            std::string_view statement(input.begin(), input.begin() + step2 + 1);
+            auto call = parse_function_call(statement);
+            statements.push_back(std::move(call));
+            input.remove_prefix(step + 1);
+        } else if (input[step] == '=') {
+            //assignment
+            auto step2 = input.find_first_of(";");
+            std::string_view statement(input.begin(), input.begin() + step2 + 1);
+            auto assignment = parse_variable_const_assignment(statement);
+            statements.push_back(std::move(assignment));
+            input.remove_prefix(step2 + 1);
+        } else if (input[step] == ';') {
+            //variable definition
+            std::string_view statement(input.begin(), input.begin() + step + 1);
+            auto def = parse_variable_definition(statement);
+            vars.push_back(def);
+            input.remove_prefix(step + 1);
+        } else {
+            throw std::runtime_error("unknown section");
+        }
+    }
+}
+
 FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
     auto call = std::make_unique<FunctionCall>();
     std::string currentToken;
