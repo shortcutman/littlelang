@@ -80,3 +80,24 @@ TEST(ParsedBlock, parse_many3) {
     EXPECT_EQ(assign2->to, "another");
     EXPECT_EQ(assign2->value, 1111);
 }
+
+TEST(ParsedBlock, parse_whitespace1) {
+    std::string eg =
+        R"(int32 test;
+        test = 123;)";
+    std::string_view view(eg);
+
+    ParsedBlock block;
+    block.parse_block(view);
+
+    EXPECT_EQ(block.vars.size(), 1);
+    EXPECT_EQ(block.vars.front().name, "test");
+    EXPECT_EQ(block.vars.front().type, VariableDefinition::Int32);
+
+    EXPECT_EQ(block.statements.size(), 1);
+
+    auto assign = dynamic_cast<VariableConstAssignment*>(block.statements.front().get());
+    EXPECT_NE(assign, nullptr);
+    EXPECT_EQ(assign->to, "test");
+    EXPECT_EQ(assign->value, 123);
+}

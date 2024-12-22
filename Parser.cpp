@@ -123,34 +123,42 @@ VariableDefinition ParsedBlock::parse_variable_definition(std::string_view input
     return def;
 }
 
+namespace {
+    void trim_left(std::string_view& view) {
+        while (std::isspace(view[0])) {
+            view.remove_prefix(1);
+        }
+    }
+
+    void trim_right(std::string_view& view) {
+        while (std::isspace(view[view.size() - 1])) {
+            view.remove_suffix(1);
+        }
+    }
+
+    void trim_sides(std::string_view& view) {
+        trim_left(view);
+        trim_right(view);
+    }
+}
+
 VariableConstAssignmentPtr ParsedBlock::parse_variable_const_assignment(std::string_view input) {
     auto assign = std::make_unique<VariableConstAssignment>();
 
-    std::string currentsymbol;
-    auto it = input.begin();
-    for (; it != input.end(); it++) {
-        if (*it == ' ') {
-            break;
-        } else {
-            currentsymbol += *it;
-        }
+    auto splitter = input.find_first_of('=');
+    auto assignTo = input.substr(0, splitter);
+    trim_sides(assignTo);
+    if (std::any_of(assignTo.begin(), assignTo.end(), [] (auto c) { return std::isspace(c); })) {
+        throw std::runtime_error("Unexpected whitespace.");
     }
-    assign->to = currentsymbol;
+    assign->to = assignTo;
 
-    it++;
-    if (*it++ != '=' && *it++ != ' ') {
-        throw std::runtime_error("unexpected character");
-    }
+    input.remove_prefix(splitter + 1);
 
-    currentsymbol = "";
-    for (; it != input.end(); it++) {
-        if (*it == ';') {
-            break;
-        } else {
-            currentsymbol += *it;
-        }
-    }
-    assign->value = atoi(currentsymbol.c_str());
+    auto end = input.find_first_of(';');
+    auto constant = input.substr(0, end);
+    trim_sides(constant);
+    assign->value = atoi(std::string(constant).c_str());
 
     return assign;
 }
