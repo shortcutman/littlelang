@@ -113,31 +113,24 @@ FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
 VariableDefinition ParsedBlock::parse_variable_definition(std::string_view input) {
     VariableDefinition def;
 
-    std::string currentsymbol;
-    auto it = input.begin();
-    for (; it != input.end(); it++) {
-        if (*it == ' ') {
-            break;
-        } else {
-            currentsymbol += *it;
-        }
-    }
+    trim_left(input);
+    auto splitter = input.find_first_of(' ');
+    auto type = input.substr(0, splitter);
 
-    if (currentsymbol != "int32") {
+    if (type != "int32") {
         throw std::runtime_error("unexpected type");
     }
     def.type = VariableDefinition::Int32;
-    it++;
+    input.remove_prefix(splitter + 1);
 
-    currentsymbol = "";
-    for (; it != input.end(); it++) {
-        if (*it == ';') {
-            break;
-        } else {
-            currentsymbol += *it;
-        }
+    splitter = input.find_first_of(';');
+    auto name = input.substr(0, splitter);
+    trim_sides(name);
+
+    if (std::any_of(name.begin(), name.end(), [] (auto c) { return std::isspace(c); })) {
+        throw std::runtime_error("Unexpected whitespace.");
     }
-    def.name = currentsymbol;
+    def.name = name;
 
     return def;
 }
