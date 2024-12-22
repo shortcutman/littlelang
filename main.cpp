@@ -104,8 +104,8 @@ void func6() {
     void* putsaddr = dlsym(dlHandle, "puts");
 
     InstrBufferx64 b;
-    b.push_mov_r64_imm64(InstrBufferx64::Register::RAX, reinterpret_cast<uint64_t>(putsaddr));
-    b.push_mov_r64_imm64(InstrBufferx64::Register::RDI, reinterpret_cast<uint64_t>(another));
+    b.mov_r64_imm64(InstrBufferx64::Register::RAX, reinterpret_cast<uint64_t>(putsaddr));
+    b.mov_r64_imm64(InstrBufferx64::Register::RDI, reinterpret_cast<uint64_t>(another));
     b.call_r64(InstrBufferx64::Register::RAX);
     b.ret();
     b.execute();

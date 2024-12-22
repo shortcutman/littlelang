@@ -30,7 +30,7 @@ public:
     void execute();
     std::vector<std::uint8_t> buffer() const;
 
-    void push_mov_r64_imm64(Register dest, std::uint64_t input);
+    void mov_r64_imm64(Register dest, std::uint64_t input);
     void call_r64(Register dest);
     void ret();
 

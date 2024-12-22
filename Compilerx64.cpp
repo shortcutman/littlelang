@@ -13,7 +13,7 @@
 using namespace compiler_x64;
 
 void compiler_x64::compile_function_call(const FunctionCall& call, InstrBufferx64& buff) {
-    buff.push_mov_r64_imm64(
+    buff.mov_r64_imm64(
         InstrBufferx64::Register::RAX,
         reinterpret_cast<uint64_t>(call.functionAddr));
 
@@ -31,13 +31,13 @@ void compiler_x64::compile_function_call(const FunctionCall& call, InstrBufferx6
     for (size_t i = 0; i < call.params.size(); i++) {
         auto string = dynamic_cast<StringParam*>(call.params[i].get());
         if (string) {
-            buff.push_mov_r64_imm64(index_to_register[i], reinterpret_cast<uint64_t>(const_cast<char*>(string->content.c_str())));
+            buff.mov_r64_imm64(index_to_register[i], reinterpret_cast<uint64_t>(const_cast<char*>(string->content.c_str())));
             continue;
         }
 
         auto intparam = dynamic_cast<Int64Param*>(call.params[i].get());
         if (intparam) {
-            buff.push_mov_r64_imm64(index_to_register[i], intparam->content);
+            buff.mov_r64_imm64(index_to_register[i], intparam->content);
             continue;
         }
 
