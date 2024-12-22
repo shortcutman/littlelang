@@ -3,12 +3,20 @@
 
 #include <gtest/gtest.h>
 
-TEST(InstrBufferx64, Call) {
+TEST(InstrBufferx64, call_rax) {
     InstrBufferx64 b;
     b.call_r64(InstrBufferx64::Register::RAX);
     EXPECT_EQ(
         b.buffer(),
         std::vector<uint8_t>({0xff, 0xd0}));
+}
+
+TEST(InstrBufferx64, call_rdi) {
+    InstrBufferx64 b;
+    b.call_r64(InstrBufferx64::Register::RDI);
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({0xff, 0xd7}));
 }
 
 TEST(InstrBufferx64, Return) {

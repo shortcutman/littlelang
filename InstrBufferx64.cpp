@@ -31,7 +31,7 @@ void InstrBufferx64::mov_r64_imm64(Register dest, std::uint64_t input) {
 
 void InstrBufferx64::call_r64(Register dest) {
     push_byte(0xff);
-    push_modrm(3, 2, static_cast<int>(dest) & 0x03);
+    push_modrm(3, 2, static_cast<int>(dest) & 0x07);
 }
 
 void InstrBufferx64::ret() {
@@ -40,7 +40,7 @@ void InstrBufferx64::ret() {
 
 void InstrBufferx64::push(Register src) {
     push_byte(0xff);
-    push_modrm(3, 6, static_cast<int>(src) & 0x03);
+    push_modrm(3, 6, static_cast<int>(src) & 0x07);
 }
 
 void InstrBufferx64::mov(Register dest, Register src) {
