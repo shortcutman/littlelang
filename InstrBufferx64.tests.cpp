@@ -46,6 +46,16 @@ TEST(InstrBufferx64, mov_stack_imm64) {
         }));
 }
 
+TEST(InstrBufferx64, mov_r64_stack) {
+    InstrBufferx64 b;
+    b.mov_r64_stack(InstrBufferx64::Register::RSI, -8);
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0x8b, 0x75, 0xf8
+        }));
+}
+
 TEST(InstrBufferx64, push_rbp) {
     InstrBufferx64 b;
     b.push(InstrBufferx64::Register::RBP);

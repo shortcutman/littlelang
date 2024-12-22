@@ -44,6 +44,13 @@ void InstrBufferx64::mov_stack_imm64(std::int8_t adjust, std::uint64_t value) {
     push_byte(*reinterpret_cast<uint8_t*>(&adjust));
 }
 
+void InstrBufferx64::mov_r64_stack(Register dest, std::int8_t adjust) {
+    push_rexw();
+    push_byte(0x8b);
+    push_modrm(1, dest, Register::RBP);
+    push_byte(*reinterpret_cast<uint8_t*>(&adjust));
+}
+
 void InstrBufferx64::call_r64(Register dest) {
     push_byte(0xff);
     push_modrm(3, 2, static_cast<int>(dest) & 0x07);
