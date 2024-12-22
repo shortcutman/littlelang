@@ -76,7 +76,7 @@ void InstrBufferx64::pop(Register dest) {
     push_byte(0x58 + (static_cast<int>(dest) & 0x07));
 }
 
-void InstrBufferx64::mov(Register dest, Register src) {
+void InstrBufferx64::mov_r64_r64(Register dest, Register src) {
     push_rexw();
     push_byte(0x89);
     push_modrm(3, /* regop src */ src, /* rm dest */ dest);

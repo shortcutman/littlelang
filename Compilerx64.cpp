@@ -82,7 +82,7 @@ void compiler_x64::compile_function_call(const ParsedBlock& block, const Functio
 
 void compiler_x64::compile_block_prefix(const ParsedBlock& block, InstrBufferx64& buff) {
     buff.push(InstrBufferx64::Register::RBP);
-    buff.mov(InstrBufferx64::Register::RBP, InstrBufferx64::Register::RSP);
+    buff.mov_r64_r64(InstrBufferx64::Register::RBP, InstrBufferx64::Register::RSP);
 
     int32_t stackSize = block.vars.size() * 8;
     auto remainder = stackSize % 16;

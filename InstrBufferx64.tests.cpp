@@ -74,7 +74,7 @@ TEST(InstrBufferx64, pop_rbp) {
 
 TEST(InstrBufferx64, mov_rbp_rsp) {
     InstrBufferx64 b;
-    b.mov(InstrBufferx64::Register::RBP, InstrBufferx64::Register::RSP);
+    b.mov_r64_r64(InstrBufferx64::Register::RBP, InstrBufferx64::Register::RSP);
     EXPECT_EQ(
         b.buffer(),
         std::vector<uint8_t>({0x48, 0x89, 0xe5}));
