@@ -9,7 +9,7 @@
 #include <dlfcn.h>
 
 FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
-    auto call = std::unique_ptr<FunctionCall>();
+    auto call = std::make_unique<FunctionCall>();
     std::string currentToken;
     auto it = input.begin();
     for (; it != input.end(); it++) {

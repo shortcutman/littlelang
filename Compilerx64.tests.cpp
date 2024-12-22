@@ -11,11 +11,10 @@
 #include <gtest/gtest.h>
 
 TEST(Compilerx64Tests, compile_function_call) {
-    FunctionCall call{{},
-        "testFunc",
-        reinterpret_cast<void*>(0x1122334455667788),
-        reinterpret_cast<void*>(0xaabbccddeeffaabb)
-    };
+    FunctionCall call;
+    call.functionName = "testFunc";
+    call.functionAddr = reinterpret_cast<void*>(0x1122334455667788);
+    call.param = reinterpret_cast<void*>(0xaabbccddeeffaabb);
     InstrBufferx64 buffer;
 
     compiler_x64::compile_function_call(call, buffer);

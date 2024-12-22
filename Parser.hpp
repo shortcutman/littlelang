@@ -19,9 +19,12 @@ struct VariableDefinition {
 };
 
 struct Statement {
+    virtual ~Statement() = default;
 };
 
 struct FunctionCall : public Statement {
+    virtual ~FunctionCall() = default;
+
     std::string functionName;
     void* functionAddr;
     void* param;
@@ -29,6 +32,8 @@ struct FunctionCall : public Statement {
 typedef std::unique_ptr<FunctionCall> FunctionCallPtr;
 
 struct VariableConstAssignment : public Statement {
+    virtual ~VariableConstAssignment() = default;
+
     std::string to;
     std::uint32_t value;
 };
