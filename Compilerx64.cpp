@@ -10,6 +10,7 @@
 
 #include <expected>
 #include <map>
+#include <ranges>
 #include <sstream>
 
 using namespace compiler_x64;
@@ -100,6 +101,22 @@ namespace {
 
         return std::unexpected(ss.str());
     }
+
+    void push_many_wo(InstrBufferx64& buff, std::vector<InstrBufferx64::Register> list, InstrBufferx64::Register skip) {
+        for (auto reg : list) {
+            if (reg != skip) {
+                buff.push(reg);
+            }
+        }
+    }
+
+    void pop_many_wo(InstrBufferx64& buff, std::vector<InstrBufferx64::Register> list, InstrBufferx64::Register skip) {
+        for (auto reg : std::ranges::reverse_view{list}) {
+            if (reg != skip) {
+                buff.pop(reg);
+            }
+        }
+    }
 }
 
 void compiler_x64::compile_parameter_to_register(const ParsedBlock& block, Param* param, InstrBufferx64::Register dest, InstrBufferx64& buff) {
@@ -129,17 +146,35 @@ void compiler_x64::compile_parameter_to_register(const ParsedBlock& block, Param
 
             //TODO: This clobbers the RAX and RCX registers! push them to the stack!!
             //or maybe push that burden to the caller
-            auto destplus = static_cast<InstrBufferx64::Register>(static_cast<int>(dest) + 1);
 
-            compile_parameter_to_register(block, int64calc->lhs.get(), dest, buff);
-            compile_parameter_to_register(block, int64calc->rhs.get(), destplus, buff);
+            switch (int64calc->operation) {
+                case Int64Calcuation::Addition:
+                {
+                    auto destplus = static_cast<InstrBufferx64::Register>(static_cast<int>(dest) + 1);
+                    compile_parameter_to_register(block, int64calc->lhs.get(), dest, buff);
+                    compile_parameter_to_register(block, int64calc->rhs.get(), destplus, buff);
+                    buff.add_r64_r64(dest, destplus);
+                }
+                    return;
 
-            if (int64calc->operation != Int64Calcuation::Addition) {
-                throw std::runtime_error("unknown operation");
+                case Int64Calcuation::Modulo:
+                {
+                    push_many_wo(buff, {InstrBufferx64::Register::RAX, InstrBufferx64::Register::RDX, InstrBufferx64::Register::RCX}, dest);
+
+                    compile_parameter_to_register(block, int64calc->lhs.get(), InstrBufferx64::Register::RAX, buff);
+                    compile_parameter_to_register(block, int64calc->rhs.get(), InstrBufferx64::Register::RCX, buff);
+
+                    buff.cqo_idiv_r64(InstrBufferx64::Register::RCX);
+                    buff.mov_r64_r64(dest, InstrBufferx64::Register::RDX);
+
+                    pop_many_wo(buff, {InstrBufferx64::Register::RAX, InstrBufferx64::Register::RDX, InstrBufferx64::Register::RCX}, dest);
+                }
+                    return;
+
+                default:
+                    throw std::runtime_error("unknown operation");
+                    return;
             }
-
-            buff.add_r64_r64(dest, destplus);
-            return;
         } else {
             throw std::runtime_error("unknown statement");
         }
