@@ -8,6 +8,7 @@
 #include "InstrBufferx64.hpp"
 #include "Parser.hpp"
 
+#include <expected>
 #include <gtest/gtest.h>
 
 TEST(Compilerx64Tests, compile_function_call_with_intparam) {
@@ -237,6 +238,21 @@ TEST(Compilerx64Tests, compile_assignment_const_int64) {
     );
 }
 
+TEST(Compilerx64Tests, compile_assignment_no_var) {
+    ParsedBlock block;
+
+    auto assign = std::make_unique<VariableAssignment>();
+    VariableAssignment* rawAssign = assign.get();
+    assign->to.content = "test";
+    auto value = std::make_unique<Int64Param>();
+    value->content = 1234;
+    assign->value = std::move(value);
+    block.statements.push_back(std::move(assign));
+
+    InstrBufferx64 buffer;
+    EXPECT_THROW(compiler_x64::compile_assignment(block, *rawAssign, buffer), std::bad_expected_access<std::string>);
+}
+
 TEST(Compilerx64Tests, compile_assignment_const_int64_by_two) {
     ParsedBlock block;
 
@@ -266,6 +282,39 @@ TEST(Compilerx64Tests, compile_assignment_const_int64_by_two) {
         std::vector<uint8_t>({
             0x48, 0xb8, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, imm64
             0x48, 0x89, 0x45, 0xf0 //mov [rbp - 0x8], rax
+        })
+    );
+}
+
+TEST(Compilerx64Tests, compile_assignment_stack_var) {
+    ParsedBlock block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    VariableDefinition def2;
+    def2.name = "another";
+    def2.type = VariableDefinition::Int64;
+    block.vars.push_back(def2);
+
+    auto assign = std::make_unique<VariableAssignment>();
+    VariableAssignment* rawAssign = assign.get();
+    assign->to.content = "test";
+    auto value = std::make_unique<StackVariableParam>();
+    value->content = "another";
+    assign->value = std::move(value);
+    block.statements.push_back(std::move(assign));
+
+    InstrBufferx64 buffer;
+    compiler_x64::compile_assignment(block, *rawAssign, buffer);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0x8b, 0x45, 0xf0, // mov rax, [rbp - 16]
+            0x48, 0x89, 0x45, 0xf8  //mov [rbp - 0x8], rax
         })
     );
 }

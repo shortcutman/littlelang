@@ -8,7 +8,9 @@
 #include "Parser.hpp"
 #include "InstrBufferx64.hpp"
 
+#include <expected>
 #include <map>
+#include <sstream>
 
 using namespace compiler_x64;
 
@@ -110,23 +112,35 @@ void compiler_x64::compile_block_suffix(const ParsedBlock& block, InstrBufferx64
     buff.ret();
 }
 
-void compiler_x64::compile_assignment(const ParsedBlock& block, const VariableAssignment& assignment, InstrBufferx64& buff) {
-    //get stack mem loc
-    std::optional<int8_t> stackLocation;
-    for (size_t i = 0; i < block.vars.size(); i++) {
-        if (block.vars[i].name == assignment.to.content) {
-            stackLocation = (i + 1) * -8;
-            break;
+namespace {
+    std::expected<int8_t, std::string> get_stack_location(const ParsedBlock& block, const std::string& variable) {
+        for (size_t i = 0; i < block.vars.size(); i++) {
+            if (block.vars[i].name == variable) {
+                return (i + 1) * -8;
+            }
         }
+
+        std::stringstream ss;
+        ss << "Cannot find variable name: " << variable;
+
+        return std::unexpected(ss.str());
+    }
+}
+
+void compiler_x64::compile_assignment(const ParsedBlock& block, const VariableAssignment& assignment, InstrBufferx64& buff) {
+    auto assignToLocation = get_stack_location(block, assignment.to.content);
+
+    auto int64param = dynamic_cast<Int64Param*>(assignment.value.get());
+    if (int64param) {
+        buff.mov_stack_imm64(assignToLocation.value(), int64param->content);
+        return;
     }
 
-    if (stackLocation == std::nullopt) {
-        throw std::runtime_error("can't find variable");
-    }
-
-    auto value = dynamic_cast<Int64Param*>(assignment.value.get());
-    if (value) {
-        buff.mov_stack_imm64(*stackLocation, value->content);
+    auto stackvarparam = dynamic_cast<StackVariableParam*>(assignment.value.get());
+    if (stackvarparam) {
+        auto assignFromLocation = get_stack_location(block, stackvarparam->content);
+        buff.mov_r64_stack(InstrBufferx64::Register::RAX, assignFromLocation.value());
+        buff.mov_stack_r64(assignToLocation.value(), InstrBufferx64::Register::RAX);
         return;
     }
 
