@@ -137,8 +137,10 @@ void func8() {
 void func9() {
     std::string eg = R"(
     int64 test;
+    int64 another;
     test = 1234;
-    printf("test %i", test);
+    another = test;
+    printf("test %i", another);
     )";
 
     ParsedBlock p;
