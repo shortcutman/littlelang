@@ -158,7 +158,7 @@ ParamPtr ParsedBlock::parse_parameter(std::string_view input) {
         return param;
     }
     
-    auto opSymbol = input.find_first_of("+");
+    auto opSymbol = input.find_first_of(Int64Calcuation::operatorSymbols);
     if (opSymbol != std::string_view::npos) {
         auto calc = std::make_unique<Int64Calcuation>();
         calc->set_op_from_char(input[opSymbol]);

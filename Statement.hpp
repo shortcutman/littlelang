@@ -66,6 +66,8 @@ struct Int64Calcuation : public Statement {
         Addition
     } operation = Unknown;
 
+    static constexpr std::string_view operatorSymbols = "+";
+
     inline void set_op_from_char(char op) {
         switch (op) {
             case '+':
