@@ -126,6 +126,32 @@ TEST(Parser, parse_variable_assignment_to_int64_const_addition) {
     EXPECT_EQ(rhs->content, 2);
 }
 
+TEST(Parser, parse_variable_assignment_to_int64_const_modulo) {
+    std::string eg = R"(test = 4 % 3;)";
+    ParsedBlock p;
+    auto assign = p.parse_variable_assignment(eg);
+
+    EXPECT_EQ(assign->to.content, "test");
+
+    auto value = dynamic_cast<StatementParam*>(assign->value.get());
+    ASSERT_NE(value, nullptr);
+
+    auto statement = dynamic_cast<Statement*>(value->statement.get());
+    ASSERT_NE(statement, nullptr);
+
+    auto int64calc = dynamic_cast<Int64Calcuation*>(statement);
+    ASSERT_NE(int64calc, nullptr);
+    EXPECT_EQ(int64calc->operation, Int64Calcuation::Modulo);
+
+    auto lhs = dynamic_cast<Int64Param*>(int64calc->lhs.get());
+    ASSERT_NE(lhs, nullptr);
+    EXPECT_EQ(lhs->content, 4);
+
+    auto rhs = dynamic_cast<Int64Param*>(int64calc->rhs.get());
+    ASSERT_NE(rhs, nullptr);
+    EXPECT_EQ(rhs->content, 3);
+}
+
 class ParamParseIntTest
     : public testing::TestWithParam<std::tuple<std::string_view, int64_t>> {
 public:

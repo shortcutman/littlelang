@@ -63,15 +63,19 @@ struct Int64Calcuation : public Statement {
 
     enum Operation {
         Unknown,
-        Addition
+        Addition,
+        Modulo
     } operation = Unknown;
 
-    static constexpr std::string_view operatorSymbols = "+";
+    static constexpr std::string_view operatorSymbols = "+%";
 
     inline void set_op_from_char(char op) {
         switch (op) {
             case '+':
                 operation = Addition;
+                return;
+            case '%':
+                operation = Modulo;
                 return;
             default:
                 operation = Unknown;
