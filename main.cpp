@@ -132,15 +132,20 @@ void func8() {
     compiler_x64::compile_function_call(p, *call, i);
     i.ret();
     i.execute();
+    printf("\n");
 }
 
 void func9() {
     std::string eg = R"(
     int64 test;
     int64 another;
-    test = 1234;
+    another = 2;
+    printf("another %i ", another);
+    test = 1 + another;
+    printf("test %i ", test);
+    test = another + 1;
     another = test;
-    printf("test %i", another);
+    printf("another with test %i ", another);
     )";
 
     ParsedBlock p;
