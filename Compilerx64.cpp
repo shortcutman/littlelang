@@ -158,12 +158,12 @@ void compiler_x64::compile_assignment(const ParsedBlock& block, const VariableAs
             }
 
             buff.add_r64_r64(InstrBufferx64::Register::RAX, InstrBufferx64::Register::RCX);
-            buff.mov_stack_r64(assignToLocation.value(), InstrBufferx64::Register::RAX);
-
-            return;
+        } else {
+            throw std::runtime_error("unknown statement");
         }
+    } else {
+        compile_parameter_to_register(block, assignment.value.get(), InstrBufferx64::Register::RAX, buff);
     }
-
-    compile_parameter_to_register(block, assignment.value.get(), InstrBufferx64::Register::RAX, buff);
+    
     buff.mov_stack_r64(assignToLocation.value(), InstrBufferx64::Register::RAX);
 }
