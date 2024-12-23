@@ -142,43 +142,7 @@ VariableAssignmentPtr ParsedBlock::parse_variable_assignment(std::string_view in
 
     auto end = input.find_first_of(';');
     auto value = input.substr(0, end);
-    trim_left(value);
-
-    auto valueDetermine = value.find_first_of("+");
-    if (valueDetermine != std::string_view::npos) {
-        //operation
-        auto calc = std::make_unique<Int64Calcuation>();
-        calc->set_op_from_char(value[valueDetermine]);
-
-        auto lhs = value.substr(0, valueDetermine);
-        calc->lhs = parse_parameter(lhs);
-        value.remove_prefix(valueDetermine + 1);
-        calc->rhs = parse_parameter(value);
-        auto statementParam = std::make_unique<StatementParam>();
-        statementParam->statement = std::move(calc);
-        assign->value = std::move(statementParam);
-    } else if (std::isdigit(value[0])) { //integer constant
-        trim_right(value);
-        if (haswhitespace(value)) {
-            throw std::runtime_error("unexpected whitespace");
-        }
-
-        auto param = std::make_unique<Int64Param>();
-        param->content = atoi(std::string(value).c_str());
-        assign->value = std::move(param);
-    } else if (value[0] == '"') { //string
-        throw std::runtime_error("unimplemented");
-    } else { //variable name
-        trim_right(value);
-        if (haswhitespace(value)) {
-            throw std::runtime_error("unexpected whitespace");
-        }
-
-        auto param = std::make_unique<StackVariableParam>();
-        param->content = value;
-        assign->value = std::move(param);
-    }
-
+    assign->value = parse_parameter(value);
     return assign;
 }
 
@@ -192,6 +156,20 @@ ParamPtr ParsedBlock::parse_parameter(std::string_view input) {
         auto param = std::make_unique<StringParam>();
         param->content = std::string(input.substr(1, input.size() - 2));
         return param;
+    }
+    
+    auto opSymbol = input.find_first_of("+");
+    if (opSymbol != std::string_view::npos) {
+        auto calc = std::make_unique<Int64Calcuation>();
+        calc->set_op_from_char(input[opSymbol]);
+        auto lhs = input.substr(0, opSymbol);
+        calc->lhs = parse_parameter(lhs);
+        input.remove_prefix(opSymbol + 1);
+        calc->rhs = parse_parameter(input);
+
+        auto statementParam = std::make_unique<StatementParam>();
+        statementParam->statement = std::move(calc);
+        return statementParam;
     } else if (haswhitespace(input)) {
         throw std::runtime_error("unexpected whitespace");
     } else if (std::isdigit(input[0])) {
