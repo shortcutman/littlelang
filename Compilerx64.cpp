@@ -122,31 +122,36 @@ void compiler_x64::compile_parameter_to_register(const ParsedBlock& block, Param
         return;
     }
 
+    auto statementparam = dynamic_cast<StatementParam*>(param);
+    if (statementparam) {
+        auto int64calc = dynamic_cast<Int64Calcuation*>(statementparam->statement.get());
+        if (int64calc) {
+
+            //TODO: This clobbers the RAX and RCX registers! push them to the stack!!
+            //or maybe push that burden to the caller
+            auto destplus = static_cast<InstrBufferx64::Register>(static_cast<int>(dest) + 1);
+
+            compile_parameter_to_register(block, int64calc->lhs.get(), dest, buff);
+            compile_parameter_to_register(block, int64calc->rhs.get(), destplus, buff);
+
+            if (int64calc->operation != Int64Calcuation::Addition) {
+                throw std::runtime_error("unknown operation");
+            }
+
+            buff.add_r64_r64(dest, destplus);
+            return;
+        } else {
+            throw std::runtime_error("unknown statement");
+        }
+    }
+
     throw std::runtime_error("Unknown parameter type.");
 }
 
 void compiler_x64::compile_assignment(const ParsedBlock& block, const VariableAssignment& assignment, InstrBufferx64& buff) {
     auto assignToLocation = get_stack_location(block, assignment.to.content);
 
-    auto statementparam = dynamic_cast<StatementParam*>(assignment.value.get());
-    if (statementparam) {
-        auto int64calc = dynamic_cast<Int64Calcuation*>(statementparam->statement.get());
-        if (int64calc) {
-
-            compile_parameter_to_register(block, int64calc->lhs.get(), InstrBufferx64::Register::RAX, buff);
-            compile_parameter_to_register(block, int64calc->rhs.get(), InstrBufferx64::Register::RCX, buff);
-
-            if (int64calc->operation != Int64Calcuation::Addition) {
-                throw std::runtime_error("unknown operation");
-            }
-
-            buff.add_r64_r64(InstrBufferx64::Register::RAX, InstrBufferx64::Register::RCX);
-        } else {
-            throw std::runtime_error("unknown statement");
-        }
-    } else {
-        compile_parameter_to_register(block, assignment.value.get(), InstrBufferx64::Register::RAX, buff);
-    }
+    compile_parameter_to_register(block, assignment.value.get(), InstrBufferx64::Register::RAX, buff);
     
     buff.mov_stack_r64(assignToLocation.value(), InstrBufferx64::Register::RAX);
 }
