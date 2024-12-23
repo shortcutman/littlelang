@@ -29,6 +29,12 @@ struct Int64Param : public Param {
     std::int64_t content;
 };
 
+struct StatementParam : public Param {
+    virtual ~StatementParam() = default;
+
+    std::unique_ptr<Statement> statement;
+};
+
 struct StackVariableParam : public Param {
     virtual ~StackVariableParam() = default;
     std::string content;
@@ -50,3 +56,14 @@ struct VariableAssignment : public Statement {
     std::unique_ptr<Param> value;
 };
 typedef std::unique_ptr<VariableAssignment> VariableAssignmentPtr;
+
+struct Int64Calcuation : public Statement {
+    virtual ~Int64Calcuation() = default;
+
+    enum Operation {
+        Addition
+    } operation;
+
+    std::unique_ptr<Param> lhs;
+    std::unique_ptr<Param> rhs;
+};
