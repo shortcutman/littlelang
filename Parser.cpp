@@ -88,32 +88,8 @@ FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
     auto tokenEnd = input.find_first_of(",)");
     while (tokenEnd != std::string_view::npos) {
         auto token = input.substr(0, tokenEnd);
-        trim_left(token);
-
-        if (std::isdigit(token[0])) {
-            //integer
-            std::string valueChars(token);
-            auto param = std::make_unique<Int64Param>();
-            param->content = std::atoi(valueChars.c_str());
-            call->params.push_back(std::move(param));
-        } else if (token[0] == '"') {
-            //string start
-            token.remove_prefix(1);
-            auto stringEnd = token.find_first_of('"');
-            auto param = std::make_unique<StringParam>();
-            param->content = std::string(token.substr(0, stringEnd));
-            call->params.push_back(std::move(param));
-        } else {
-            trim_right(token);
-            if (haswhitespace(token)) {
-                throw std::runtime_error("unexpected whitespace");
-            }
-
-            auto param = std::make_unique<StackVariableParam>();
-            param->content = token;
-            call->params.push_back(std::move(param));
-        }
-
+        auto param = parse_parameter(token);
+        call->params.push_back(std::move(param));
         input.remove_prefix(tokenEnd + 1);
         tokenEnd = input.find_first_of(",)");
     }
