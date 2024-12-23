@@ -168,10 +168,51 @@ VariableAssignmentPtr ParsedBlock::parse_variable_assignment(std::string_view in
     auto value = input.substr(0, end);
     trim_left(value);
 
-    auto valueDetermine = value.find_first_of("+%");
+    auto valueDetermine = value.find_first_of("+");
     if (valueDetermine != std::string_view::npos) {
         //operation
-        throw std::runtime_error("unimplemented");
+        auto calc = std::make_unique<Int64Calcuation>();
+
+        switch (value[valueDetermine])
+        {
+        case '+':
+            calc->operation = Int64Calcuation::Addition;
+            break;
+        
+        default:
+            throw std::runtime_error("unexpected operation");
+            break;
+        }
+
+        auto lhs = value.substr(0, valueDetermine);
+        trim_sides(lhs);
+        if (haswhitespace(lhs)) {
+            throw std::runtime_error("unexpected whitespace");
+        } else if (std::isdigit(lhs[0])) {
+            auto int64param = std::make_unique<Int64Param>();
+            int64param->content = std::atoi(&lhs[0]);
+            calc->lhs = std::move(int64param);
+        } else {
+            throw std::runtime_error("unexpected parameter");
+        }
+
+        value.remove_prefix(valueDetermine + 1);
+        
+        auto rhs = value;
+        trim_sides(rhs);
+        if (haswhitespace(rhs)) {
+            throw std::runtime_error("unexpected whitespace");
+        } else if (std::isdigit(rhs[0])) {
+            auto int64param = std::make_unique<Int64Param>();
+            int64param->content = std::atoi(&rhs[0]);
+            calc->rhs = std::move(int64param);
+        } else {
+            throw std::runtime_error("unexpected parameter");
+        }
+
+        auto statementParam = std::make_unique<StatementParam>();
+        statementParam->statement = std::move(calc);
+        assign->value = std::move(statementParam);
     } else if (std::isdigit(value[0])) { //integer constant
         trim_right(value);
         if (haswhitespace(value)) {

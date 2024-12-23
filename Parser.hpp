@@ -12,8 +12,6 @@
 #include <string>
 #include <vector>
 
-
-
 class ParsedBlock {
 public:
     std::vector<VariableDefinition> vars;
