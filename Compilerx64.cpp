@@ -51,32 +51,7 @@ void compiler_x64::compile_function_call(const ParsedBlock& block, const Functio
     }
 
     for (size_t i = 0; i < call.params.size(); i++) {
-        auto string = dynamic_cast<StringParam*>(call.params[i].get());
-        if (string) {
-            buff.mov_r64_imm64(index_to_register[i], reinterpret_cast<uint64_t>(const_cast<char*>(string->content.c_str())));
-            continue;
-        }
-
-        auto intparam = dynamic_cast<Int64Param*>(call.params[i].get());
-        if (intparam) {
-            buff.mov_r64_imm64(index_to_register[i], intparam->content);
-            continue;
-        }
-
-        auto stackparam = dynamic_cast<StackVariableParam*>(call.params[i].get());
-        if (stackparam) {
-            auto result = std::find_if(block.vars.begin(), block.vars.end(),
-                [stackparam] (const VariableDefinition& def) { return def.name == stackparam->content;});
-            if (result == block.vars.end()) {
-                throw std::runtime_error("Unknown variable");
-            }
-
-            int8_t stackLocation = (std::distance(block.vars.begin(), result) + 1) * -8;
-            buff.mov_r64_stack(index_to_register[i], stackLocation);
-            continue;
-        }
-
-        throw std::runtime_error("Unknown parameter type.");
+        compile_parameter_to_register(block, call.params[i].get(), index_to_register[i], buff);
     }
 
     buff.call_r64(InstrBufferx64::Register::RAX);
@@ -140,6 +115,14 @@ void compiler_x64::compile_parameter_to_register(const ParsedBlock& block, Param
         buff.mov_r64_stack(dest, assignFromLocation.value());
         return;
     }
+
+    auto string = dynamic_cast<StringParam*>(param);
+    if (string) {
+        buff.mov_r64_imm64(dest, reinterpret_cast<uint64_t>(const_cast<char*>(string->content.c_str())));
+        return;
+    }
+
+    throw std::runtime_error("Unknown parameter type.");
 }
 
 void compiler_x64::compile_assignment(const ParsedBlock& block, const VariableAssignment& assignment, InstrBufferx64& buff) {
