@@ -127,39 +127,31 @@ namespace {
     }
 }
 
-void compiler_x64::compile_assignment(const ParsedBlock& block, const VariableAssignment& assignment, InstrBufferx64& buff) {
-    auto assignToLocation = get_stack_location(block, assignment.to.content);
-
-    auto int64param = dynamic_cast<Int64Param*>(assignment.value.get());
+void compiler_x64::compile_parameter_to_register(const ParsedBlock& block, Param* param, InstrBufferx64::Register dest, InstrBufferx64& buff) {
+    auto int64param = dynamic_cast<Int64Param*>(param);
     if (int64param) {
-        buff.mov_stack_imm64(assignToLocation.value(), int64param->content);
+        buff.mov_r64_imm64(dest, int64param->content);
         return;
     }
 
-    auto stackvarparam = dynamic_cast<StackVariableParam*>(assignment.value.get());
+    auto stackvarparam = dynamic_cast<StackVariableParam*>(param);
     if (stackvarparam) {
         auto assignFromLocation = get_stack_location(block, stackvarparam->content);
-        buff.mov_r64_stack(InstrBufferx64::Register::RAX, assignFromLocation.value());
-        buff.mov_stack_r64(assignToLocation.value(), InstrBufferx64::Register::RAX);
+        buff.mov_r64_stack(dest, assignFromLocation.value());
         return;
     }
+}
+
+void compiler_x64::compile_assignment(const ParsedBlock& block, const VariableAssignment& assignment, InstrBufferx64& buff) {
+    auto assignToLocation = get_stack_location(block, assignment.to.content);
 
     auto statementparam = dynamic_cast<StatementParam*>(assignment.value.get());
     if (statementparam) {
         auto int64calc = dynamic_cast<Int64Calcuation*>(statementparam->statement.get());
         if (int64calc) {
-            auto lhs = dynamic_cast<Int64Param*>(int64calc->lhs.get());
-            if (lhs == nullptr) {
-                throw std::runtime_error("unknown lhs parameter");
-            }
 
-            auto rhs = dynamic_cast<Int64Param*>(int64calc->rhs.get());
-            if (rhs == nullptr) {
-                throw std::runtime_error("unknown rhs parameter");
-            }
-
-            buff.mov_r64_imm64(InstrBufferx64::Register::RAX, lhs->content);
-            buff.mov_r64_imm64(InstrBufferx64::Register::RCX, rhs->content);
+            compile_parameter_to_register(block, int64calc->lhs.get(), InstrBufferx64::Register::RAX, buff);
+            compile_parameter_to_register(block, int64calc->rhs.get(), InstrBufferx64::Register::RCX, buff);
 
             if (int64calc->operation != Int64Calcuation::Addition) {
                 throw std::runtime_error("unknown operation");
@@ -172,5 +164,6 @@ void compiler_x64::compile_assignment(const ParsedBlock& block, const VariableAs
         }
     }
 
-    throw std::runtime_error("Unknown parameter in variable assignment.");
+    compile_parameter_to_register(block, assignment.value.get(), InstrBufferx64::Register::RAX, buff);
+    buff.mov_stack_r64(assignToLocation.value(), InstrBufferx64::Register::RAX);
 }

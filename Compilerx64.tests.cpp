@@ -319,7 +319,7 @@ TEST(Compilerx64Tests, compile_assignment_stack_var) {
     );
 }
 
-TEST(Compilerx64Tests, compile_assignment_int_const_operation) {
+TEST(Compilerx64Tests, compile_assignment_int_const_operation_addition) {
     ParsedBlock block;
 
     VariableDefinition def;
@@ -360,3 +360,130 @@ TEST(Compilerx64Tests, compile_assignment_int_const_operation) {
         })
     );
 }
+
+TEST(Compilerx64Tests, compile_assignment_operation_int_const_addition_stack_var) {
+    ParsedBlock block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    VariableDefinition def2;
+    def2.name = "another";
+    def2.type = VariableDefinition::Int64;
+    block.vars.push_back(def2);
+
+    auto assign = std::make_unique<VariableAssignment>();
+    VariableAssignment* rawAssign = assign.get();
+    assign->to.content = "test";
+
+    auto statementParam = std::make_unique<StatementParam>();
+    auto int64calc = std::make_unique<Int64Calcuation>();
+    int64calc->set_op_from_char('+');
+    
+    auto lhs = std::make_unique<Int64Param>();
+    lhs->content = 1;
+    int64calc->lhs = std::move(lhs);
+
+    auto rhs = std::make_unique<StackVariableParam>();
+    rhs->content = "another";
+    int64calc->rhs = std::move(rhs);
+
+    statementParam->statement = std::move(int64calc);
+    assign->value = std::move(statementParam);
+    block.statements.push_back(std::move(assign));
+
+    InstrBufferx64 buffer;
+    compiler_x64::compile_assignment(block, *rawAssign, buffer);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0xb8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //mov rax, 0x1
+            0x48, 0x8b, 0x4d, 0xf0, //mov rcx, [rbp - 0x10]
+            0x48, 0x03, 0xc1, //add rax, rcx
+            0x48, 0x89, 0x45, 0xf8 //mov [rbp - 0x8], rax
+        })
+    );
+}
+
+class Compilex64ParamStackTest
+    : public testing::TestWithParam<std::tuple<InstrBufferx64::Register, std::vector<uint8_t>>>
+{
+public:
+    InstrBufferx64::Register dest;
+    std::vector<uint8_t> check;
+
+    void SetUp() override {
+        auto [desiredDest, testCheck] = GetParam();
+        dest = desiredDest;
+        check = testCheck;
+    }
+};
+
+TEST_P(Compilex64ParamStackTest, compile_parameter_to_register_stack_variable) {
+    ParsedBlock block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    StackVariableParam param;
+    param.content = "test";
+
+    InstrBufferx64 buffer;
+    compiler_x64::compile_parameter_to_register(block, &param, dest, buffer);
+
+    EXPECT_EQ(buffer.buffer(), check);
+}
+
+INSTANTIATE_TEST_SUITE_P(Compilex64ParamStackTest, Compilex64ParamStackTest, ::testing::Values(
+    std::make_tuple(InstrBufferx64::Register::RAX,
+                    std::vector<uint8_t>({0x48, 0x8b, 0x45, 0xf8})),
+    std::make_tuple(InstrBufferx64::Register::RCX,
+                    std::vector<uint8_t>({0x48, 0x8b, 0x4d, 0xf8})),
+    std::make_tuple(InstrBufferx64::Register::RDI,
+                    std::vector<uint8_t>({0x48, 0x8b, 0x7d, 0xf8}))
+));
+
+class Compilex64ParamInt64Test
+    : public testing::TestWithParam<std::tuple<InstrBufferx64::Register, std::vector<uint8_t>>>
+{
+public:
+    InstrBufferx64::Register dest;
+    std::vector<uint8_t> check;
+
+    void SetUp() override {
+        auto [desiredDest, testCheck] = GetParam();
+        dest = desiredDest;
+        check = testCheck;
+    }
+};
+
+TEST_P(Compilex64ParamInt64Test, compile_parameter_to_register_const_int) {
+    ParsedBlock block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    Int64Param param;
+    param.content = 1234;
+
+    InstrBufferx64 buffer;
+    compiler_x64::compile_parameter_to_register(block, &param, dest, buffer);
+
+    EXPECT_EQ(buffer.buffer(), check);
+}
+
+INSTANTIATE_TEST_SUITE_P(Compilex64ParamInt64Test, Compilex64ParamInt64Test, ::testing::Values(
+    std::make_tuple(InstrBufferx64::Register::RAX,
+                    std::vector<uint8_t>({0x48, 0xb8, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})),
+    std::make_tuple(InstrBufferx64::Register::RCX,
+                    std::vector<uint8_t>({0x48, 0xb9, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})),
+    std::make_tuple(InstrBufferx64::Register::RDI,
+                    std::vector<uint8_t>({0x48, 0xbf, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}))
+));
