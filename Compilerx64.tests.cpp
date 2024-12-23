@@ -318,3 +318,44 @@ TEST(Compilerx64Tests, compile_assignment_stack_var) {
         })
     );
 }
+
+TEST(Compilerx64Tests, compile_assignment_int_const_operation) {
+    ParsedBlock block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    auto assign = std::make_unique<VariableAssignment>();
+    VariableAssignment* rawAssign = assign.get();
+    assign->to.content = "test";
+
+    auto statementParam = std::make_unique<StatementParam>();
+    auto int64calc = std::make_unique<Int64Calcuation>();
+    
+    auto lhs = std::make_unique<Int64Param>();
+    lhs->content = 1;
+    int64calc->lhs = std::move(lhs);
+
+    auto rhs = std::make_unique<Int64Param>();
+    rhs->content = 2;
+    int64calc->rhs = std::move(rhs);
+
+    statementParam->statement = std::move(int64calc);
+    assign->value = std::move(statementParam);
+    block.statements.push_back(std::move(assign));
+
+    InstrBufferx64 buffer;
+    compiler_x64::compile_assignment(block, *rawAssign, buffer);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0xb8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //mov rax, 0x1
+            0x48, 0xb9, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //mov rcx, 0x1
+            0x48, 0x03, 0xc1, //add rax, rcx
+            0x48, 0x89, 0x45, 0xf8 //mov [rbp - 8], rax
+        })
+    );
+}

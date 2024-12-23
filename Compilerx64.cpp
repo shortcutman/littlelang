@@ -144,5 +144,33 @@ void compiler_x64::compile_assignment(const ParsedBlock& block, const VariableAs
         return;
     }
 
+    auto statementparam = dynamic_cast<StatementParam*>(assignment.value.get());
+    if (statementparam) {
+        auto int64calc = dynamic_cast<Int64Calcuation*>(statementparam->statement.get());
+        if (int64calc) {
+            auto lhs = dynamic_cast<Int64Param*>(int64calc->lhs.get());
+            if (lhs == nullptr) {
+                throw std::runtime_error("unknown lhs parameter");
+            }
+
+            auto rhs = dynamic_cast<Int64Param*>(int64calc->rhs.get());
+            if (rhs == nullptr) {
+                throw std::runtime_error("unknown rhs parameter");
+            }
+
+            buff.mov_r64_imm64(InstrBufferx64::Register::RAX, lhs->content);
+            buff.mov_r64_imm64(InstrBufferx64::Register::RCX, rhs->content);
+
+            if (int64calc->operation != Int64Calcuation::Addition) {
+                throw std::runtime_error("unknown operation");
+            }
+
+            buff.add_r64_r64(InstrBufferx64::Register::RAX, InstrBufferx64::Register::RCX);
+            buff.mov_stack_r64(assignToLocation.value(), InstrBufferx64::Register::RAX);
+
+            return;
+        }
+    }
+
     throw std::runtime_error("Unknown parameter in variable assignment.");
 }
