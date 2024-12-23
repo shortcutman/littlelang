@@ -126,28 +126,54 @@ TEST(Parser, parse_variable_assignment_to_int64_const_addition) {
     EXPECT_EQ(rhs->content, 2);
 }
 
-class ParamParseTest : public testing::TestWithParam<std::tuple<std::string_view, int64_t>> {
+class ParamParseIntTest
+    : public testing::TestWithParam<std::tuple<std::string_view, int64_t>> {
 public:
     std::unique_ptr<Param> param;
-    int64_t testresult;
+    int64_t result;
 
     void SetUp() override {
-        auto [input, result] = GetParam();
-        testresult = result;
+        auto [input, r] = GetParam();
+        result = r;
         ParsedBlock p;
         param = p.parse_parameter(input);
     }
 };
 
-TEST_P(ParamParseTest, parse_parameter_integer) {
+TEST_P(ParamParseIntTest, parse_parameter_integer) {
     auto int64param = dynamic_cast<Int64Param*>(param.get());
     ASSERT_NE(int64param, nullptr);
-    EXPECT_EQ(int64param->content, testresult);
+    EXPECT_EQ(int64param->content, result);
 }
 
-INSTANTIATE_TEST_SUITE_P(IntegerParameterParse, ParamParseTest,::testing::Values(
+INSTANTIATE_TEST_SUITE_P(IntegerParameterParse, ParamParseIntTest, ::testing::Values(
     std::make_tuple(" 1 ", 1),
     std::make_tuple(" 1", 1),
     std::make_tuple("1 ", 1),
     std::make_tuple(" 12345 ", 12345)
+));
+
+class ParamParseStringTest
+    : public testing::TestWithParam<std::tuple<std::string_view, std::string_view>> {
+public:
+    std::unique_ptr<Param> param;
+    std::string_view result;
+
+    void SetUp() override {
+        auto [input, r] = GetParam();
+        result = r;
+        ParsedBlock p;
+        param = p.parse_parameter(input);
+    }
+};
+
+TEST_P(ParamParseStringTest, parse_parameter_string) {
+    auto stringParam = dynamic_cast<StringParam*>(param.get());
+    ASSERT_NE(stringParam, nullptr);
+    EXPECT_EQ(stringParam->content, result);
+}
+
+INSTANTIATE_TEST_SUITE_P(StringParameterParse, ParamParseStringTest, ::testing::Values(
+    std::make_tuple("\" 1 \"", " 1 "),
+    std::make_tuple("  \"abcd\" ", "abcd")
 ));

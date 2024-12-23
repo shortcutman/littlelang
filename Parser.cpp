@@ -208,7 +208,15 @@ VariableAssignmentPtr ParsedBlock::parse_variable_assignment(std::string_view in
 
 ParamPtr ParsedBlock::parse_parameter(std::string_view input) {
     trim_sides(input);
-    if (haswhitespace(input)) {
+    if (input[0] == '"') {
+        if (input.back() != '"') {
+            throw std::runtime_error("no end to string found");
+        }
+
+        auto param = std::make_unique<StringParam>();
+        param->content = std::string(input.substr(1, input.size() - 2));
+        return param;
+    } else if (haswhitespace(input)) {
         throw std::runtime_error("unexpected whitespace");
     } else if (std::isdigit(input[0])) {
         auto int64param = std::make_unique<Int64Param>();
