@@ -105,3 +105,11 @@ TEST(InstrBufferx64, add_r64_imm32) {
         b.buffer(),
         std::vector<uint8_t>({0x48, 0x81, 0xc4, 0x10, 0x00, 0x00, 0x00}));
 }
+
+TEST(InstrBufferx64, add_r64_r64) {
+    InstrBufferx64 b;
+    b.add_r64_r64(InstrBufferx64::Register::RAX, InstrBufferx64::Register::RCX);
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({0x48, 0x03, 0xc1}));
+}

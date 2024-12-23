@@ -70,6 +70,12 @@ void InstrBufferx64::add_r64_imm32(Register dest, std::int32_t value) {
     push_dword(*reinterpret_cast<uint32_t*>(&value));
 }
 
+void InstrBufferx64::add_r64_r64(Register dest, Register src) {
+    push_rexw();
+    push_byte(0x03);
+    push_modrm(3, dest, src);
+}
+
 void InstrBufferx64::ret() {
     push_byte(0xc3);
 }
