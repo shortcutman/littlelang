@@ -61,8 +61,20 @@ struct Int64Calcuation : public Statement {
     virtual ~Int64Calcuation() = default;
 
     enum Operation {
+        Unknown,
         Addition
-    } operation;
+    } operation = Unknown;
+
+    inline void set_op_from_char(char op) {
+        switch (op) {
+            case '+':
+                operation = Addition;
+                return;
+            default:
+                operation = Unknown;
+                return;
+        }
+    }
 
     std::unique_ptr<Param> lhs;
     std::unique_ptr<Param> rhs;

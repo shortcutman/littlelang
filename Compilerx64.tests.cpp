@@ -333,6 +333,7 @@ TEST(Compilerx64Tests, compile_assignment_int_const_operation) {
 
     auto statementParam = std::make_unique<StatementParam>();
     auto int64calc = std::make_unique<Int64Calcuation>();
+    int64calc->set_op_from_char('+');
     
     auto lhs = std::make_unique<Int64Param>();
     lhs->content = 1;

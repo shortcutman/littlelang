@@ -172,17 +172,7 @@ VariableAssignmentPtr ParsedBlock::parse_variable_assignment(std::string_view in
     if (valueDetermine != std::string_view::npos) {
         //operation
         auto calc = std::make_unique<Int64Calcuation>();
-
-        switch (value[valueDetermine])
-        {
-        case '+':
-            calc->operation = Int64Calcuation::Addition;
-            break;
-        
-        default:
-            throw std::runtime_error("unexpected operation");
-            break;
-        }
+        calc->set_op_from_char(value[valueDetermine]);
 
         auto lhs = value.substr(0, valueDetermine);
         trim_sides(lhs);
