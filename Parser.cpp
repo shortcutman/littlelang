@@ -6,6 +6,7 @@
 
 #include "Parser.hpp"
 
+#include <algorithm>
 #include <dlfcn.h>
 
 namespace {
