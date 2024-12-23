@@ -177,3 +177,29 @@ INSTANTIATE_TEST_SUITE_P(StringParameterParse, ParamParseStringTest, ::testing::
     std::make_tuple("\" 1 \"", " 1 "),
     std::make_tuple("  \"abcd\" ", "abcd")
 ));
+
+class ParamParseVariableTest
+    : public testing::TestWithParam<std::tuple<std::string_view, std::string_view>> {
+public:
+    std::unique_ptr<Param> param;
+    std::string_view result;
+
+    void SetUp() override {
+        auto [input, r] = GetParam();
+        result = r;
+        ParsedBlock p;
+        param = p.parse_parameter(input);
+    }
+};
+
+TEST_P(ParamParseVariableTest, parse_parameter_variable) {
+    auto stackParam = dynamic_cast<StackVariableParam*>(param.get());
+    ASSERT_NE(stackParam, nullptr);
+    EXPECT_EQ(stackParam->content, result);
+}
+
+INSTANTIATE_TEST_SUITE_P(VariableParameterParse, ParamParseVariableTest, ::testing::Values(
+    std::make_tuple("test", "test"),
+    std::make_tuple(" test ", "test"),
+    std::make_tuple(" ___test ", "___test")
+));

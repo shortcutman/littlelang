@@ -223,6 +223,8 @@ ParamPtr ParsedBlock::parse_parameter(std::string_view input) {
         int64param->content = std::atoi(&input[0]);
         return int64param;
     } else {
-        throw std::runtime_error("unexpected parameter type");
+        auto param = std::make_unique<StackVariableParam>();
+        param->content = input;
+        return param;
     }
 }
