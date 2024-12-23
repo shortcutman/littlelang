@@ -175,31 +175,9 @@ VariableAssignmentPtr ParsedBlock::parse_variable_assignment(std::string_view in
         calc->set_op_from_char(value[valueDetermine]);
 
         auto lhs = value.substr(0, valueDetermine);
-        trim_sides(lhs);
-        if (haswhitespace(lhs)) {
-            throw std::runtime_error("unexpected whitespace");
-        } else if (std::isdigit(lhs[0])) {
-            auto int64param = std::make_unique<Int64Param>();
-            int64param->content = std::atoi(&lhs[0]);
-            calc->lhs = std::move(int64param);
-        } else {
-            throw std::runtime_error("unexpected parameter");
-        }
-
+        calc->lhs = parse_parameter(lhs);
         value.remove_prefix(valueDetermine + 1);
-        
-        auto rhs = value;
-        trim_sides(rhs);
-        if (haswhitespace(rhs)) {
-            throw std::runtime_error("unexpected whitespace");
-        } else if (std::isdigit(rhs[0])) {
-            auto int64param = std::make_unique<Int64Param>();
-            int64param->content = std::atoi(&rhs[0]);
-            calc->rhs = std::move(int64param);
-        } else {
-            throw std::runtime_error("unexpected parameter");
-        }
-
+        calc->rhs = parse_parameter(value);
         auto statementParam = std::make_unique<StatementParam>();
         statementParam->statement = std::move(calc);
         assign->value = std::move(statementParam);
@@ -226,4 +204,17 @@ VariableAssignmentPtr ParsedBlock::parse_variable_assignment(std::string_view in
     }
 
     return assign;
+}
+
+ParamPtr ParsedBlock::parse_parameter(std::string_view input) {
+    trim_sides(input);
+    if (haswhitespace(input)) {
+        throw std::runtime_error("unexpected whitespace");
+    } else if (std::isdigit(input[0])) {
+        auto int64param = std::make_unique<Int64Param>();
+        int64param->content = std::atoi(&input[0]);
+        return int64param;
+    } else {
+        throw std::runtime_error("unexpected parameter type");
+    }
 }

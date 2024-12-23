@@ -16,6 +16,7 @@ struct Statement {
 struct Param {
     virtual ~Param() = default;
 };
+typedef std::unique_ptr<Param> ParamPtr;
 
 struct StringParam : public Param {
     virtual ~StringParam() = default;

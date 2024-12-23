@@ -125,3 +125,29 @@ TEST(Parser, parse_variable_assignment_to_int64_const_addition) {
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, 2);
 }
+
+class ParamParseTest : public testing::TestWithParam<std::tuple<std::string_view, int64_t>> {
+public:
+    std::unique_ptr<Param> param;
+    int64_t testresult;
+
+    void SetUp() override {
+        auto [input, result] = GetParam();
+        testresult = result;
+        ParsedBlock p;
+        param = p.parse_parameter(input);
+    }
+};
+
+TEST_P(ParamParseTest, parse_parameter_integer) {
+    auto int64param = dynamic_cast<Int64Param*>(param.get());
+    ASSERT_NE(int64param, nullptr);
+    EXPECT_EQ(int64param->content, testresult);
+}
+
+INSTANTIATE_TEST_SUITE_P(IntegerParameterParse, ParamParseTest,::testing::Values(
+    std::make_tuple(" 1 ", 1),
+    std::make_tuple(" 1", 1),
+    std::make_tuple("1 ", 1),
+    std::make_tuple(" 12345 ", 12345)
+));
