@@ -102,6 +102,18 @@ void InstrBufferx64::sub(Register dest, std::int32_t value) {
     push_dword(*reinterpret_cast<uint32_t*>(&value));
 }
 
+void InstrBufferx64::cqo_idiv_r64(Register src) {
+    if (src == Register::RAX || src == Register::RDX) {
+        throw std::logic_error("RAX and RDX should not be used for idiv.");
+    }
+
+    push_rexw();
+    push_byte(0x99);
+    push_rexw();
+    push_byte(0xf7);
+    push_modrm(3, 7, src);
+}
+
 void InstrBufferx64::push_rexw() {
     uint8_t byte = 0b01001000;
     push_byte(byte);

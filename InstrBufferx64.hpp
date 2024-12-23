@@ -40,6 +40,8 @@ public:
     void add_r64_r64(Register dest, Register src);
 
     void sub(Register dest, std::int32_t value);
+
+    void cqo_idiv_r64(Register src);
     
     void call_r64(Register dest);
     void ret();

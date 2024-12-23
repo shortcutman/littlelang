@@ -98,6 +98,27 @@ TEST(InstrBufferx64, sub_rsp_0x10) {
         std::vector<uint8_t>({0x48, 0x81, 0xec, 0x10, 0x00, 0x00, 0x00}));
 }
 
+TEST(InstrBufferx64, idiv_rax_throw) {
+    InstrBufferx64 b;
+    EXPECT_ANY_THROW(b.cqo_idiv_r64(InstrBufferx64::Register::RAX));
+}
+
+TEST(InstrBufferx64, idiv_rdx_throw) {
+    InstrBufferx64 b;
+    EXPECT_ANY_THROW(b.cqo_idiv_r64(InstrBufferx64::Register::RDX));
+}
+
+TEST(InstrBufferx64, idiv_rcx) {
+    InstrBufferx64 b;
+    b.cqo_idiv_r64(InstrBufferx64::Register::RCX);
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0x99, //cqo
+            0x48, 0xf7, 0xf9 //idiv rax
+        }));
+}
+
 TEST(InstrBufferx64, add_r64_imm32) {
     InstrBufferx64 b;
     b.add_r64_imm32(InstrBufferx64::Register::RSP, 0x10);
