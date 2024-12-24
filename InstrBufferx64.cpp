@@ -23,7 +23,7 @@ void InstrBufferx64::execute() {
     reinterpret_cast<void(*)(void)>(exememory)();
 }
 
-std::vector<uint8_t> InstrBufferx64::buffer() const {
+const std::vector<uint8_t>& InstrBufferx64::buffer() const {
     return _buffer;
 }
 
@@ -112,6 +112,22 @@ void InstrBufferx64::cqo_idiv_r64(Register src) {
     push_rexw();
     push_byte(0xf7);
     push_modrm(3, 7, src);
+}
+
+void InstrBufferx64::cmp(Register a, Register b) {
+    push_rexw();
+    push_byte(0x3b);
+    push_modrm(3, a, b);
+}
+
+void InstrBufferx64::jmp_not_equal(int32_t offset) {
+    push_byte(0x0f);
+    push_byte(0x85);
+    push_dword(offset);
+}
+
+void InstrBufferx64::append_buffer(InstrBufferx64& buffer) {
+    _buffer.append_range(buffer._buffer);
 }
 
 void InstrBufferx64::push_rexw() {

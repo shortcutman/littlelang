@@ -28,7 +28,7 @@ public:
     InstrBufferx64() {}
 
     void execute();
-    std::vector<std::uint8_t> buffer() const;
+    const std::vector<std::uint8_t>& buffer() const;
 
     void mov_r64_r64(Register dest, Register src);
     void mov_r64_imm64(Register dest, std::uint64_t input);
@@ -42,6 +42,10 @@ public:
     void sub(Register dest, std::int32_t value);
 
     void cqo_idiv_r64(Register src);
+
+    void cmp(Register a, Register b);
+    void jmp_not_equal(int32_t offset);
+    void append_buffer(InstrBufferx64& buffer);
     
     void call_r64(Register dest);
     void ret();

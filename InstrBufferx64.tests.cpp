@@ -119,6 +119,36 @@ TEST(InstrBufferx64, idiv_rcx) {
         }));
 }
 
+TEST(InstrBufferx64, cmp_rax_rcx) {
+    InstrBufferx64 b;
+    b.cmp(InstrBufferx64::Register::RAX, InstrBufferx64::Register::RCX);
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0x3b, 0xc1
+        }));
+}
+
+TEST(InstrBufferx64, cmp_rdx_rbx) {
+    InstrBufferx64 b;
+    b.cmp(InstrBufferx64::Register::RDX, InstrBufferx64::Register::RBX);
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0x3b, 0xd3
+        }));
+}
+
+TEST(InstrBufferx64, jmp_not_equal) {
+    InstrBufferx64 b;
+    b.jmp_not_equal(0x20);
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({
+            0x0f, 0x85, 0x20, 0x00, 0x00, 0x00
+        }));
+}
+
 TEST(InstrBufferx64, add_r64_imm32) {
     InstrBufferx64 b;
     b.add_r64_imm32(InstrBufferx64::Register::RSP, 0x10);
