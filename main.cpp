@@ -152,7 +152,7 @@ void func9() {
     p.parse_block(eg);
     InstrBufferx64 i;
     auto compiler = Compiler_x64(&p.block, &i);
-    compiler.compile_block();
+    compiler.compile_function();
     i.execute();
 }
 

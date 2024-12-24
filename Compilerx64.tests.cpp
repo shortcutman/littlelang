@@ -91,6 +91,21 @@ TEST(Compilerx64Tests, compile_multi_args) {
         }));
 }
 
+TEST(Compilerx64Tests, compile_function_prefix) {
+    Block block;
+    InstrBufferx64 buffer;
+    auto compiler = Compiler_x64(&block, &buffer);
+    compiler.compile_function_prefix();
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0xff, 0xf5, //push rbp
+            0x48, 0x89, 0xe5, //mov rbp, rsp
+        })
+    );
+}
+
 TEST(Compilerx64Tests, compile_block_prefix_0byte_stack) {
     Block block;
     InstrBufferx64 buffer;
@@ -99,10 +114,7 @@ TEST(Compilerx64Tests, compile_block_prefix_0byte_stack) {
 
     EXPECT_EQ(
         buffer.buffer(),
-        std::vector<uint8_t>({
-            0xff, 0xf5, //push rbp
-            0x48, 0x89, 0xe5, //mov rbp, rsp
-        })
+        std::vector<uint8_t>({})
     );
 }
 
@@ -121,8 +133,6 @@ TEST(Compilerx64Tests, compile_block_prefix_8byte_stack) {
     EXPECT_EQ(
         buffer.buffer(),
         std::vector<uint8_t>({
-            0xff, 0xf5, //push rbp
-            0x48, 0x89, 0xe5, //mov rbp, rsp
             0x48, 0x81, 0xec, 0x10, 0x00, 0x00, 0x00 //sub rsp, 0x10
         })
     );
@@ -148,9 +158,22 @@ TEST(Compilerx64Tests, compile_block_prefix_16byte_stack) {
     EXPECT_EQ(
         buffer.buffer(),
         std::vector<uint8_t>({
-            0xff, 0xf5, //push rbp
-            0x48, 0x89, 0xe5, //mov rbp, rsp
             0x48, 0x81, 0xec, 0x10, 0x00, 0x00, 0x00 //sub rsp, 0x10
+        })
+    );
+}
+
+TEST(Compilerx64Tests, compile_function_suffix) {
+    Block block;
+    InstrBufferx64 buffer;
+    auto compiler = Compiler_x64(&block, &buffer);
+    compiler.compile_function_suffix();
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0x5d, //pop rbp
+            0xc3 //ret
         })
     );
 }
@@ -163,10 +186,7 @@ TEST(Compilerx64Tests, compile_block_suffix_0byte_stack) {
 
     EXPECT_EQ(
         buffer.buffer(),
-        std::vector<uint8_t>({
-            0x5d, //pop rbp
-            0xc3 //ret
-        })
+        std::vector<uint8_t>({})
     );
 }
 
@@ -186,8 +206,6 @@ TEST(Compilerx64Tests, compile_block_suffix_8byte_stack) {
         buffer.buffer(),
         std::vector<uint8_t>({
             0x48, 0x81, 0xc4, 0x10, 0x00, 0x00, 0x00, //add rbp, 0x10
-            0x5d, //pop rbp
-            0xc3 //ret
         })
     );
 }
@@ -213,8 +231,6 @@ TEST(Compilerx64Tests, compile_block_suffix_16byte_stack) {
         buffer.buffer(),
         std::vector<uint8_t>({
             0x48, 0x81, 0xc4, 0x10, 0x00, 0x00, 0x00, //add rbp, 0x10
-            0x5d, //pop rbp
-            0xc3 //ret
         })
     );
 }

@@ -19,13 +19,16 @@ private:
 public:
     Compiler_x64(Block* block, InstrBufferx64* buff);
 
+    void compile_function();
     void compile_block();
 
+    void compile_function_prefix();
     void compile_block_prefix();
     void compile_assignment(const VariableAssignment& assignment);
     void compile_function_call(const FunctionCall& call);
     void compile_parameter_to_register(Param* param, InstrBufferx64::Register dest);
     void compile_block_suffix();
+    void compile_function_suffix();
 
     std::expected<int8_t, std::string> get_stack_location(const std::string& variable);
     

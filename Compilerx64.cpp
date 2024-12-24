@@ -19,6 +19,22 @@ Compiler_x64::Compiler_x64(Block* block, InstrBufferx64* buff)
 {
 }
 
+void Compiler_x64::compile_function() {
+    compile_function_prefix();
+    compile_block();
+    compile_function_suffix();
+}
+
+void Compiler_x64::compile_function_prefix() {
+    _buff->push(InstrBufferx64::Register::RBP);
+    _buff->mov_r64_r64(InstrBufferx64::Register::RBP, InstrBufferx64::Register::RSP);
+}
+
+void Compiler_x64::compile_function_suffix() {
+    _buff->pop(InstrBufferx64::Register::RBP);
+    _buff->ret();
+}
+
 void Compiler_x64::compile_block() {
     compile_block_prefix();
 
@@ -63,9 +79,6 @@ void Compiler_x64::compile_function_call(const FunctionCall& call) {
 }
 
 void Compiler_x64::compile_block_prefix() {
-    _buff->push(InstrBufferx64::Register::RBP);
-    _buff->mov_r64_r64(InstrBufferx64::Register::RBP, InstrBufferx64::Register::RSP);
-
     int32_t stackSize = _block->vars.size() * 8;
     auto remainder = stackSize % 16;
     if (remainder != 0) {
@@ -87,9 +100,6 @@ void Compiler_x64::compile_block_suffix() {
     if (stackSize != 0) {
         _buff->add_r64_imm32(InstrBufferx64::Register::RSP, stackSize);
     }
-    
-    _buff->pop(InstrBufferx64::Register::RBP);
-    _buff->ret();
 }
 
 std::expected<int8_t, std::string> Compiler_x64::get_stack_location(const std::string& variable) {
