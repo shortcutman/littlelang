@@ -14,8 +14,7 @@
 
 class ParsedBlock {
 public:
-    std::vector<VariableDefinition> vars;
-    std::vector<std::unique_ptr<Statement>> statements;
+    Block block;
 
 public:
     void parse_block(std::string_view input);

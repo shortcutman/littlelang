@@ -13,7 +13,7 @@
 #include <ranges>
 #include <sstream>
 
-Compiler_x64::Compiler_x64(ParsedBlock* block, InstrBufferx64* buff)
+Compiler_x64::Compiler_x64(Block* block, InstrBufferx64* buff)
 : _block(block)
 , _buff(buff)
 {

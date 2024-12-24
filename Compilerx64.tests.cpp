@@ -20,7 +20,7 @@ TEST(Compilerx64Tests, compile_function_call_with_intparam) {
     intparam->content = 0xaabbccddeeffaabb;
     call.params.push_back(std::move(intparam));
 
-    ParsedBlock block;
+    Block block;
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
     compiler.compile_function_call(call);
@@ -44,7 +44,7 @@ TEST(Compilerx64Tests, compile_function_call_with_stringparam) {
     uint8_t* pointer = reinterpret_cast<uint8_t*>(const_cast<char*>(stringparam->content.c_str()));
     call.params.push_back(std::move(stringparam));
 
-    ParsedBlock block;
+    Block block;
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
     compiler.compile_function_call(call);
@@ -76,7 +76,7 @@ TEST(Compilerx64Tests, compile_multi_args) {
     intparam2->content = 1234;
     call.params.push_back(std::move(intparam2));
 
-    ParsedBlock block;
+    Block block;
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
     compiler.compile_function_call(call);
@@ -92,7 +92,7 @@ TEST(Compilerx64Tests, compile_multi_args) {
 }
 
 TEST(Compilerx64Tests, compile_block_prefix_0byte_stack) {
-    ParsedBlock block;
+    Block block;
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
     compiler.compile_block_prefix();
@@ -107,7 +107,7 @@ TEST(Compilerx64Tests, compile_block_prefix_0byte_stack) {
 }
 
 TEST(Compilerx64Tests, compile_block_prefix_8byte_stack) {
-    ParsedBlock block;
+    Block block;
 
     VariableDefinition def;
     def.name = "test";
@@ -129,7 +129,7 @@ TEST(Compilerx64Tests, compile_block_prefix_8byte_stack) {
 }
 
 TEST(Compilerx64Tests, compile_block_prefix_16byte_stack) {
-    ParsedBlock block;
+    Block block;
 
     VariableDefinition def;
     def.name = "test";
@@ -156,7 +156,7 @@ TEST(Compilerx64Tests, compile_block_prefix_16byte_stack) {
 }
 
 TEST(Compilerx64Tests, compile_block_suffix_0byte_stack) {
-    ParsedBlock block;
+    Block block;
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
     compiler.compile_block_suffix();
@@ -171,7 +171,7 @@ TEST(Compilerx64Tests, compile_block_suffix_0byte_stack) {
 }
 
 TEST(Compilerx64Tests, compile_block_suffix_8byte_stack) {
-    ParsedBlock block;
+    Block block;
 
     VariableDefinition def;
     def.name = "test";
@@ -193,7 +193,7 @@ TEST(Compilerx64Tests, compile_block_suffix_8byte_stack) {
 }
 
 TEST(Compilerx64Tests, compile_block_suffix_16byte_stack) {
-    ParsedBlock block;
+    Block block;
 
     VariableDefinition def;
     def.name = "test";
@@ -220,7 +220,7 @@ TEST(Compilerx64Tests, compile_block_suffix_16byte_stack) {
 }
 
 TEST(Compilerx64Tests, compile_assignment_const_int64) {
-    ParsedBlock block;
+    Block block;
 
     VariableDefinition def;
     def.name = "test";
@@ -249,7 +249,7 @@ TEST(Compilerx64Tests, compile_assignment_const_int64) {
 }
 
 TEST(Compilerx64Tests, compile_assignment_no_var) {
-    ParsedBlock block;
+    Block block;
 
     auto assign = std::make_unique<VariableAssignment>();
     VariableAssignment* rawAssign = assign.get();
@@ -265,7 +265,7 @@ TEST(Compilerx64Tests, compile_assignment_no_var) {
 }
 
 TEST(Compilerx64Tests, compile_assignment_const_int64_by_two) {
-    ParsedBlock block;
+    Block block;
 
     VariableDefinition def;
     def.name = "test";
@@ -299,7 +299,7 @@ TEST(Compilerx64Tests, compile_assignment_const_int64_by_two) {
 }
 
 TEST(Compilerx64Tests, compile_assignment_stack_var) {
-    ParsedBlock block;
+    Block block;
 
     VariableDefinition def;
     def.name = "test";
@@ -333,7 +333,7 @@ TEST(Compilerx64Tests, compile_assignment_stack_var) {
 }
 
 TEST(Compilerx64Tests, compile_assignment_int_const_operation_addition) {
-    ParsedBlock block;
+    Block block;
 
     VariableDefinition def;
     def.name = "test";
@@ -378,7 +378,7 @@ TEST(Compilerx64Tests, compile_assignment_int_const_operation_addition) {
 }
 
 TEST(Compilerx64Tests, compile_assignment_operation_int_const_addition_stack_var) {
-    ParsedBlock block;
+    Block block;
 
     VariableDefinition def;
     def.name = "test";
@@ -442,7 +442,7 @@ public:
 };
 
 TEST_P(Compilex64ParamStackTest, compile_parameter_to_register_stack_variable) {
-    ParsedBlock block;
+    Block block;
 
     VariableDefinition def;
     def.name = "test";
@@ -483,7 +483,7 @@ public:
 };
 
 TEST_P(Compilex64ParamInt64Test, compile_parameter_to_register_const_int) {
-    ParsedBlock block;
+    Block block;
 
     VariableDefinition def;
     def.name = "test";
@@ -510,7 +510,7 @@ INSTANTIATE_TEST_SUITE_P(Compilex64ParamInt64Test, Compilex64ParamInt64Test, ::t
 ));
 
 TEST(Compilerx64Tests, compile_assignment_int_const_operation_modulo) {
-    ParsedBlock block;
+    Block block;
 
     VariableDefinition def;
     def.name = "test";

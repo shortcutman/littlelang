@@ -13,8 +13,10 @@
 TEST(ParsedBlock, parse_many) {
     std::string_view view(R"(int64 test;test = 123;)");
 
-    ParsedBlock block;
-    block.parse_block(view);
+    ParsedBlock parser;
+    parser.parse_block(view);
+
+    auto& block = parser.block;
 
     EXPECT_EQ(block.vars.size(), 1);
     EXPECT_EQ(block.vars.front().name, "test");
@@ -36,8 +38,10 @@ TEST(ParsedBlock, parse_many2) {
     std::string eg = R"(int64 test;int64 another;test = 123;another = 1111;)";
     std::string_view view(eg);
 
-    ParsedBlock block;
-    block.parse_block(view);
+    ParsedBlock parser;
+    parser.parse_block(view);
+
+    auto& block = parser.block;
 
     EXPECT_EQ(block.vars.size(), 2);
     EXPECT_EQ(block.vars[0].name, "test");
@@ -66,8 +70,9 @@ TEST(ParsedBlock, parse_many3) {
     std::string eg = R"(int64 test;test = 123;int64 another;another = 1111;)";
     std::string_view view(eg);
 
-    ParsedBlock block;
-    block.parse_block(view);
+    ParsedBlock parser;
+    auto& block = parser.block;
+    parser.parse_block(view);
 
     EXPECT_EQ(block.vars.size(), 2);
     EXPECT_EQ(block.vars[0].name, "test");
@@ -96,8 +101,10 @@ TEST(ParsedBlock, parse_many4) {
     std::string eg = R"(int64 test;puts("test");int64 another;)";
     std::string_view view(eg);
 
-    ParsedBlock block;
-    block.parse_block(view);
+    ParsedBlock parser;
+    parser.parse_block(view);
+
+    auto& block = parser.block;
 
     EXPECT_EQ(block.vars.size(), 2);
     EXPECT_EQ(block.vars[0].name, "test");
@@ -119,8 +126,10 @@ TEST(ParsedBlock, parse_whitespace1) {
         test = 123;)";
     std::string_view view(eg);
 
-    ParsedBlock block;
-    block.parse_block(view);
+    ParsedBlock parser;
+    parser.parse_block(view);
+
+    auto& block = parser.block;
 
     EXPECT_EQ(block.vars.size(), 1);
     EXPECT_EQ(block.vars.front().name, "test");
@@ -144,8 +153,10 @@ TEST(ParsedBlock, parse_whitespace2) {
     another = 1111;)";
     std::string_view view(eg);
 
-    ParsedBlock block;
-    block.parse_block(view);
+    ParsedBlock parser;
+    parser.parse_block(view);
+
+    auto& block = parser.block;
 
     EXPECT_EQ(block.vars.size(), 2);
     EXPECT_EQ(block.vars[0].name, "test");

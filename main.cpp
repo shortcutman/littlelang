@@ -117,7 +117,7 @@ void func7() {
     ParsedBlock p;
     auto call = p.parse_function_call(example);
     InstrBufferx64 i;
-    auto compiler = Compiler_x64(&p, &i);
+    auto compiler = Compiler_x64(&p.block, &i);
     compiler.compile_function_call(*call);
     i.ret();
     
@@ -130,7 +130,7 @@ void func8() {
     ParsedBlock p;
     auto call = p.parse_function_call(eg);
     InstrBufferx64 i;
-    auto compiler = Compiler_x64(&p, &i);
+    auto compiler = Compiler_x64(&p.block, &i);
     compiler.compile_function_call(*call);
     i.ret();
     i.execute();
@@ -151,7 +151,7 @@ void func9() {
     ParsedBlock p;
     p.parse_block(eg);
     InstrBufferx64 i;
-    auto compiler = Compiler_x64(&p, &i);
+    auto compiler = Compiler_x64(&p.block, &i);
     compiler.compile_block();
     i.execute();
 }

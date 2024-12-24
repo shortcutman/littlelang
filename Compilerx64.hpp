@@ -5,23 +5,19 @@
 
 #pragma once
 
-struct FunctionCall;
-class ParsedBlock;
-class Param;
-class VariableAssignment;
-
 #include "InstrBufferx64.hpp"
+#include "Statement.hpp"
 
 #include <expected>
 
 class Compiler_x64 {
 
 private:
-    ParsedBlock* _block = nullptr;
+    Block* _block = nullptr;
     InstrBufferx64* _buff = nullptr;
 
 public:
-    Compiler_x64(ParsedBlock* block, InstrBufferx64* buff);
+    Compiler_x64(Block* block, InstrBufferx64* buff);
 
     void compile_block();
 

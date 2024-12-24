@@ -5,9 +5,19 @@
 
 #pragma once
 
+#include "Variables.hpp"
+
 #include <cstdint>
 #include <string>
 #include <vector>
+
+struct Statement;
+
+struct Block {
+    std::vector<VariableDefinition> vars;
+    std::vector<std::unique_ptr<Statement>> statements;
+    Block* parent = nullptr;
+};
 
 struct Statement {
     virtual ~Statement() = default;

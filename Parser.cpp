@@ -44,20 +44,20 @@ void ParsedBlock::parse_block(std::string_view input) {
             auto step2 = input.find_first_of(";");
             std::string_view statement(input.begin(), input.begin() + step2 + 1);
             auto call = parse_function_call(statement);
-            statements.push_back(std::move(call));
+            block.statements.push_back(std::move(call));
             input.remove_prefix(step2 + 1);
         } else if (input[step] == '=') {
             //assignment
             auto step2 = input.find_first_of(";");
             std::string_view statement(input.begin(), input.begin() + step2 + 1);
             auto assignment = parse_variable_assignment(statement);
-            statements.push_back(std::move(assignment));
+            block.statements.push_back(std::move(assignment));
             input.remove_prefix(step2 + 1);
         } else if (input[step] == ';') {
             //variable definition
             std::string_view statement(input.begin(), input.begin() + step + 1);
             auto def = parse_variable_definition(statement);
-            vars.push_back(def);
+            block.vars.push_back(def);
             input.remove_prefix(step + 1);
         } else {
             throw std::runtime_error("unknown section");
