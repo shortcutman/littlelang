@@ -96,3 +96,54 @@ struct Int64Calcuation : public Statement {
     std::unique_ptr<Param> lhs;
     std::unique_ptr<Param> rhs;
 };
+
+struct IfStatement : public Statement {
+    virtual ~IfStatement() = default;
+
+    enum Comparator {
+        Unknown,
+        Equal,
+        NotEqual,
+        LessThan,
+        LessThanOrEqual,
+        GreaterThan,
+        GreaterThanOrEqual,
+    } comparator = Unknown;
+    std::unique_ptr<Param> lhs;
+    std::unique_ptr<Param> rhs;
+    Block block;
+
+    static constexpr std::string_view comparatorSymbols = "=!<>";
+
+    inline size_t set_cmp_from_sv(std::string_view op) {
+        if (op.starts_with("==")) {
+            comparator = Equal;
+            return 2;
+        } else if (op.starts_with("!=")) {
+            comparator = NotEqual;
+            return 2;
+        } else if (op.starts_with("<")) {
+            comparator = LessThan;
+            return 1;
+        } else if (op.starts_with("<=")) {
+            comparator = LessThanOrEqual;
+            return 2;
+        } else if (op.starts_with(">")) {
+            comparator = GreaterThan;
+            return 1;
+        } else if (op.starts_with(">=")) {
+            comparator = GreaterThanOrEqual;
+            return 2;
+        } else {
+            throw std::runtime_error("unknown comparator");
+            return 0;
+        }
+    }
+};
+
+struct IfChainStatement : public Statement {
+    virtual ~IfChainStatement() = default;
+
+    std::vector<std::unique_ptr<IfStatement>> _ifstatements;
+};
+typedef std::unique_ptr<IfChainStatement> IfChainStatementPtr;

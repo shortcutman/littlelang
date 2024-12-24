@@ -229,3 +229,127 @@ INSTANTIATE_TEST_SUITE_P(VariableParameterParse, ParamParseVariableTest, ::testi
     std::make_tuple(" test ", "test"),
     std::make_tuple(" ___test ", "___test")
 ));
+
+TEST(Parser, parse_if_statement_const_parameters) {
+    std::string eg = R"(if ( 1 == 1) {})";
+    Parser p;
+    auto ifchain = p.parse_if_chain(eg);
+    ASSERT_NE(ifchain, nullptr);
+    ASSERT_FALSE(ifchain->_ifstatements.empty());
+    EXPECT_EQ(ifchain->_ifstatements.size(), 1);
+
+    auto ifstatement = ifchain->_ifstatements.front().get();
+    EXPECT_EQ(ifstatement->comparator, IfStatement::Equal);
+
+    auto lhs = dynamic_cast<Int64Param*>(ifstatement->lhs.get());
+    ASSERT_NE(lhs, nullptr);
+    EXPECT_EQ(lhs->content, 1);
+
+    auto rhs = dynamic_cast<Int64Param*>(ifstatement->rhs.get());
+    ASSERT_NE(rhs, nullptr);
+    EXPECT_EQ(rhs->content, 1);
+
+    EXPECT_TRUE(ifstatement->block.vars.empty());
+    EXPECT_TRUE(ifstatement->block.statements.empty());
+    EXPECT_EQ(ifstatement->block.parent, &p.block);
+}
+
+
+TEST(Parser, parse_if_statement_const_and_stack_parameters) {
+    std::string eg = R"(if ( 1 == another) {})";
+    Parser p;
+    auto ifchain = p.parse_if_chain(eg);
+    ASSERT_NE(ifchain, nullptr);
+    ASSERT_FALSE(ifchain->_ifstatements.empty());
+    EXPECT_EQ(ifchain->_ifstatements.size(), 1);
+
+    auto ifstatement = ifchain->_ifstatements.front().get();
+    EXPECT_EQ(ifstatement->comparator, IfStatement::Equal);
+
+    auto lhs = dynamic_cast<Int64Param*>(ifstatement->lhs.get());
+    ASSERT_NE(lhs, nullptr);
+    EXPECT_EQ(lhs->content, 1);
+
+    auto rhs = dynamic_cast<StackVariableParam*>(ifstatement->rhs.get());
+    ASSERT_NE(rhs, nullptr);
+    EXPECT_EQ(rhs->content, "another");
+
+    EXPECT_TRUE(ifstatement->block.vars.empty());
+    EXPECT_TRUE(ifstatement->block.statements.empty());
+    EXPECT_EQ(ifstatement->block.parent, &p.block);
+}
+
+TEST(Parser, parse_if_statement_stack_and_const_parameters) {
+    std::string eg = R"(if ( another == 1) {})";
+    Parser p;
+    auto ifchain = p.parse_if_chain(eg);
+    ASSERT_NE(ifchain, nullptr);
+    ASSERT_FALSE(ifchain->_ifstatements.empty());
+    EXPECT_EQ(ifchain->_ifstatements.size(), 1);
+
+    auto ifstatement = ifchain->_ifstatements.front().get();
+    EXPECT_EQ(ifstatement->comparator, IfStatement::Equal);
+
+    auto lhs = dynamic_cast<StackVariableParam*>(ifstatement->lhs.get());
+    ASSERT_NE(lhs, nullptr);
+    EXPECT_EQ(lhs->content, "another");
+
+    auto rhs = dynamic_cast<Int64Param*>(ifstatement->rhs.get());
+    ASSERT_NE(rhs, nullptr);
+    EXPECT_EQ(rhs->content, 1);
+
+    EXPECT_TRUE(ifstatement->block.vars.empty());
+    EXPECT_TRUE(ifstatement->block.statements.empty());
+    EXPECT_EQ(ifstatement->block.parent, &p.block);
+}
+
+TEST(Parser, parse_if_statement_stack_and_stack_parameters) {
+    std::string eg = R"(if ( another == test ) {})";
+    Parser p;
+    auto ifchain = p.parse_if_chain(eg);
+    ASSERT_NE(ifchain, nullptr);
+    ASSERT_FALSE(ifchain->_ifstatements.empty());
+    EXPECT_EQ(ifchain->_ifstatements.size(), 1);
+
+    auto ifstatement = ifchain->_ifstatements.front().get();
+    EXPECT_EQ(ifstatement->comparator, IfStatement::Equal);
+
+    auto lhs = dynamic_cast<StackVariableParam*>(ifstatement->lhs.get());
+    ASSERT_NE(lhs, nullptr);
+    EXPECT_EQ(lhs->content, "another");
+
+    auto rhs = dynamic_cast<StackVariableParam*>(ifstatement->rhs.get());
+    ASSERT_NE(rhs, nullptr);
+    EXPECT_EQ(rhs->content, "test");
+
+    EXPECT_TRUE(ifstatement->block.vars.empty());
+    EXPECT_TRUE(ifstatement->block.statements.empty());
+    EXPECT_EQ(ifstatement->block.parent, &p.block);
+}
+
+TEST(Parser, parse_if_statement_stack_and_const_parameters_with_block_contents) {
+    std::string eg = R"(if ( another == 1) { another = 2; })";
+    Parser p;
+    auto ifchain = p.parse_if_chain(eg);
+    ASSERT_NE(ifchain, nullptr);
+    ASSERT_FALSE(ifchain->_ifstatements.empty());
+    EXPECT_EQ(ifchain->_ifstatements.size(), 1);
+
+    auto ifstatement = ifchain->_ifstatements.front().get();
+    EXPECT_EQ(ifstatement->comparator, IfStatement::Equal);
+
+    auto lhs = dynamic_cast<StackVariableParam*>(ifstatement->lhs.get());
+    ASSERT_NE(lhs, nullptr);
+    EXPECT_EQ(lhs->content, "another");
+
+    auto rhs = dynamic_cast<Int64Param*>(ifstatement->rhs.get());
+    ASSERT_NE(rhs, nullptr);
+    EXPECT_EQ(rhs->content, 1);
+
+    EXPECT_TRUE(ifstatement->block.vars.empty());
+    EXPECT_EQ(ifstatement->block.statements.size(), 1);
+    EXPECT_EQ(ifstatement->block.parent, &p.block);
+
+    auto statement = dynamic_cast<VariableAssignment*>(ifstatement->block.statements.front().get());
+    ASSERT_NE(statement, nullptr);
+}

@@ -182,3 +182,46 @@ ParamPtr Parser::parse_parameter(std::string_view input) {
         return param;
     }
 }
+
+IfChainStatementPtr Parser::parse_if_chain(std::string_view input) {
+    trim_sides(input);
+    if (input.substr(0, 2) != "if") {
+        throw std::runtime_error("expected if statement");
+    }
+    
+    auto ifchain = std::make_unique<IfChainStatement>();
+
+    auto ifStatement = std::make_unique<IfStatement>();
+    auto comparisonStart = input.find_first_of('(');
+    auto comparatorEnd = input.find_first_of(')');
+    if (comparisonStart == std::string_view::npos || comparatorEnd == std::string_view::npos) {
+        throw std::runtime_error("expected bracket");
+    }
+
+    auto comparison = input.substr(comparisonStart + 1, comparatorEnd - comparisonStart - 1);
+    auto comparator = comparison.find_first_of(IfStatement::comparatorSymbols);
+
+    ifStatement->lhs = parse_parameter(comparison.substr(0, comparator));
+    comparison.remove_prefix(comparator);
+    auto cmpSize = ifStatement->set_cmp_from_sv(comparison.substr(0, 2));
+    comparison.remove_prefix(cmpSize);
+    ifStatement->rhs = parse_parameter(comparison.substr(0));
+
+    input.remove_prefix(comparatorEnd);
+    auto blockStart = input.find_first_of('{');
+    auto blockEnd = input.find_first_of('}');
+    if (blockStart == std::string_view::npos || blockEnd == std::string_view::npos) {
+        throw std::runtime_error("couldn't find block delimiters");
+    }
+    auto block = input.substr(blockStart + 1, blockEnd - blockStart - 1);
+
+    Parser parser;
+    parser.parse_block(block);
+    ifStatement->block = std::move(parser.block);
+    ifStatement->block.parent = &this->block;
+    input.remove_prefix(blockEnd + 1);
+
+    ifchain->_ifstatements.push_back(std::move(ifStatement));
+
+    return ifchain;
+}
