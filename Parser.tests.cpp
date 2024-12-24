@@ -10,7 +10,7 @@
 
 TEST(Parser, parse_function_call) {
     std::string eg = R"(puts("test");)";
-    ParsedBlock p;
+    Parser p;
     auto call = p.parse_function_call(eg);
     EXPECT_EQ(call->functionName, "puts");
 
@@ -26,7 +26,7 @@ TEST(Parser, parse_function_call) {
 
 TEST(Parser, printf_two_args) {
     std::string eg = "printf(\"test %i \n\",123);";
-    ParsedBlock p;
+    Parser p;
     auto call = p.parse_function_call(eg);
     EXPECT_EQ(call->functionName, "printf");
 
@@ -48,7 +48,7 @@ TEST(Parser, printf_two_args) {
 
 TEST(Parser, parse_function_call_stack_argument) {
     std::string eg = "printf(\"test %i \n\",intarg);";
-    ParsedBlock p;
+    Parser p;
     auto call = p.parse_function_call(eg);
     EXPECT_EQ(call->functionName, "printf");
 
@@ -69,7 +69,7 @@ TEST(Parser, parse_function_call_stack_argument) {
 
 TEST(Parser, parse_variable_definition) {
     std::string eg = R"(int64 test;)";
-    ParsedBlock p;
+    Parser p;
     auto definition = p.parse_variable_definition(eg);
 
     EXPECT_EQ(definition.name, "test");
@@ -78,7 +78,7 @@ TEST(Parser, parse_variable_definition) {
 
 TEST(Parser, parse_variable_assignment_to_const) {
     std::string eg = R"(test = 123;)";
-    ParsedBlock p;
+    Parser p;
     auto assign = p.parse_variable_assignment(eg);
 
     EXPECT_EQ(assign->to.content, "test");
@@ -90,7 +90,7 @@ TEST(Parser, parse_variable_assignment_to_const) {
 
 TEST(Parser, parse_variable_assignment_to_variable) {
     std::string eg = R"(test = another;)";
-    ParsedBlock p;
+    Parser p;
     auto assign = p.parse_variable_assignment(eg);
 
     EXPECT_EQ(assign->to.content, "test");
@@ -102,7 +102,7 @@ TEST(Parser, parse_variable_assignment_to_variable) {
 
 TEST(Parser, parse_variable_assignment_to_int64_const_addition) {
     std::string eg = R"(test = 1 + 2;)";
-    ParsedBlock p;
+    Parser p;
     auto assign = p.parse_variable_assignment(eg);
 
     EXPECT_EQ(assign->to.content, "test");
@@ -128,7 +128,7 @@ TEST(Parser, parse_variable_assignment_to_int64_const_addition) {
 
 TEST(Parser, parse_variable_assignment_to_int64_const_modulo) {
     std::string eg = R"(test = 4 % 3;)";
-    ParsedBlock p;
+    Parser p;
     auto assign = p.parse_variable_assignment(eg);
 
     EXPECT_EQ(assign->to.content, "test");
@@ -161,7 +161,7 @@ public:
     void SetUp() override {
         auto [input, r] = GetParam();
         result = r;
-        ParsedBlock p;
+        Parser p;
         param = p.parse_parameter(input);
     }
 };
@@ -188,7 +188,7 @@ public:
     void SetUp() override {
         auto [input, r] = GetParam();
         result = r;
-        ParsedBlock p;
+        Parser p;
         param = p.parse_parameter(input);
     }
 };
@@ -213,7 +213,7 @@ public:
     void SetUp() override {
         auto [input, r] = GetParam();
         result = r;
-        ParsedBlock p;
+        Parser p;
         param = p.parse_parameter(input);
     }
 };

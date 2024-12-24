@@ -114,7 +114,7 @@ void func6() {
 void func7() {
     std::string example = R"(puts("func7");)";
 
-    ParsedBlock p;
+    Parser p;
     auto call = p.parse_function_call(example);
     InstrBufferx64 i;
     auto compiler = Compiler_x64(&p.block, &i);
@@ -127,7 +127,7 @@ void func7() {
 void func8() {
     std::string eg = R"(printf("test %i", 123);)";
 
-    ParsedBlock p;
+    Parser p;
     auto call = p.parse_function_call(eg);
     InstrBufferx64 i;
     auto compiler = Compiler_x64(&p.block, &i);
@@ -148,7 +148,7 @@ void func9() {
     printf("another with test %i ", another);
     )";
 
-    ParsedBlock p;
+    Parser p;
     p.parse_block(eg);
     InstrBufferx64 i;
     auto compiler = Compiler_x64(&p.block, &i);

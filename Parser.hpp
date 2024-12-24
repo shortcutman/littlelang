@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-class ParsedBlock {
+class Parser {
 public:
     Block block;
 

@@ -32,7 +32,7 @@ namespace {
     }
 }
 
-void ParsedBlock::parse_block(std::string_view input) {
+void Parser::parse_block(std::string_view input) {
     std::array<char, 3> steps = { '(', '=', ' ' };
 
     while (!input.empty()) {
@@ -65,7 +65,7 @@ void ParsedBlock::parse_block(std::string_view input) {
     }
 }
 
-FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
+FunctionCallPtr Parser::parse_function_call(std::string_view input) {
     auto call = std::make_unique<FunctionCall>();
 
     auto nameEnd = input.find_first_of("(");
@@ -101,7 +101,7 @@ FunctionCallPtr ParsedBlock::parse_function_call(std::string_view input) {
     return call;
 }
 
-VariableDefinition ParsedBlock::parse_variable_definition(std::string_view input) {
+VariableDefinition Parser::parse_variable_definition(std::string_view input) {
     VariableDefinition def;
 
     trim_left(input);
@@ -127,7 +127,7 @@ VariableDefinition ParsedBlock::parse_variable_definition(std::string_view input
     return def;
 }
 
-VariableAssignmentPtr ParsedBlock::parse_variable_assignment(std::string_view input) {
+VariableAssignmentPtr Parser::parse_variable_assignment(std::string_view input) {
     auto assign = std::make_unique<VariableAssignment>();
 
     auto splitter = input.find_first_of('=');
@@ -146,7 +146,7 @@ VariableAssignmentPtr ParsedBlock::parse_variable_assignment(std::string_view in
     return assign;
 }
 
-ParamPtr ParsedBlock::parse_parameter(std::string_view input) {
+ParamPtr Parser::parse_parameter(std::string_view input) {
     trim_sides(input);
     if (input[0] == '"') {
         if (input.back() != '"') {

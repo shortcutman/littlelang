@@ -10,10 +10,10 @@
 
 #include <gtest/gtest.h>
 
-TEST(ParsedBlock, parse_many) {
+TEST(Parser, parse_many) {
     std::string_view view(R"(int64 test;test = 123;)");
 
-    ParsedBlock parser;
+    Parser parser;
     parser.parse_block(view);
 
     auto& block = parser.block;
@@ -34,11 +34,11 @@ TEST(ParsedBlock, parse_many) {
     EXPECT_EQ(value->content, 123);
 }
 
-TEST(ParsedBlock, parse_many2) {
+TEST(Parser, parse_many2) {
     std::string eg = R"(int64 test;int64 another;test = 123;another = 1111;)";
     std::string_view view(eg);
 
-    ParsedBlock parser;
+    Parser parser;
     parser.parse_block(view);
 
     auto& block = parser.block;
@@ -66,11 +66,11 @@ TEST(ParsedBlock, parse_many2) {
     EXPECT_EQ(value2->content, 123);
 }
 
-TEST(ParsedBlock, parse_many3) {
+TEST(Parser, parse_many3) {
     std::string eg = R"(int64 test;test = 123;int64 another;another = 1111;)";
     std::string_view view(eg);
 
-    ParsedBlock parser;
+    Parser parser;
     auto& block = parser.block;
     parser.parse_block(view);
 
@@ -97,11 +97,11 @@ TEST(ParsedBlock, parse_many3) {
     EXPECT_EQ(value2->content, 1111);
 }
 
-TEST(ParsedBlock, parse_many4) {
+TEST(Parser, parse_many4) {
     std::string eg = R"(int64 test;puts("test");int64 another;)";
     std::string_view view(eg);
 
-    ParsedBlock parser;
+    Parser parser;
     parser.parse_block(view);
 
     auto& block = parser.block;
@@ -120,13 +120,13 @@ TEST(ParsedBlock, parse_many4) {
     EXPECT_EQ(assign1->params.size(), 1);
 }
 
-TEST(ParsedBlock, parse_whitespace1) {
+TEST(Parser, parse_whitespace1) {
     std::string eg =
         R"(int64 test;
         test = 123;)";
     std::string_view view(eg);
 
-    ParsedBlock parser;
+    Parser parser;
     parser.parse_block(view);
 
     auto& block = parser.block;
@@ -145,7 +145,7 @@ TEST(ParsedBlock, parse_whitespace1) {
     EXPECT_EQ(value->content, 123);
 }
 
-TEST(ParsedBlock, parse_whitespace2) {
+TEST(Parser, parse_whitespace2) {
     std::string eg = R"(
     int64 test;
     test = 123;
@@ -153,7 +153,7 @@ TEST(ParsedBlock, parse_whitespace2) {
     another = 1111;)";
     std::string_view view(eg);
 
-    ParsedBlock parser;
+    Parser parser;
     parser.parse_block(view);
 
     auto& block = parser.block;
