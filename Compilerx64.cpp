@@ -79,24 +79,14 @@ void Compiler_x64::compile_function_call(const FunctionCall& call) {
 }
 
 void Compiler_x64::compile_block_prefix() {
-    int32_t stackSize = _block->vars.size() * 8;
-    auto remainder = stackSize % 16;
-    if (remainder != 0) {
-        stackSize += 16 - remainder;
-    }
-
+    auto stackSize = _block->stack_size_aligned();
     if (stackSize != 0) {
         _buff->sub(InstrBufferx64::Register::RSP, stackSize);
     }
 }
 
 void Compiler_x64::compile_block_suffix() {
-    int32_t stackSize = _block->vars.size() * 8;
-    auto remainder = stackSize % 16;
-    if (remainder != 0) {
-        stackSize += 16 - remainder;
-    }
-
+    auto stackSize = _block->stack_size_aligned();
     if (stackSize != 0) {
         _buff->add_r64_imm32(InstrBufferx64::Register::RSP, stackSize);
     }

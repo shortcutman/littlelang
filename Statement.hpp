@@ -17,6 +17,12 @@ struct Block {
     std::vector<VariableDefinition> vars;
     std::vector<std::unique_ptr<Statement>> statements;
     Block* parent = nullptr;
+
+    size_t stack_size_aligned() const {
+        size_t size = vars.size() * 8;
+        size_t remainder = size % 16;
+        return (remainder != 0) ? (size + (16 - remainder)) : size;
+    }
 };
 
 struct Statement {
