@@ -40,12 +40,21 @@ void Parser::parse_block(std::string_view input) {
         if (step == std::string_view::npos) {
             break;
         } else if (input[step] == '(') {
-            //function call
-            auto step2 = input.find_first_of(";");
-            std::string_view statement(input.begin(), input.begin() + step2 + 1);
-            auto call = parse_function_call(statement);
-            block.statements.push_back(std::move(call));
-            input.remove_prefix(step2 + 1);
+
+            auto token = input.substr(0, step);
+            trim_sides(token);
+            if (token == "if") {
+                //if statement
+                auto ifchain = parse_if_chain(input);
+                block.statements.push_back(std::move(ifchain));
+            } else {
+                //function call
+                auto step2 = input.find_first_of(";");
+                std::string_view statement(input.begin(), input.begin() + step2 + 1);
+                auto call = parse_function_call(statement);
+                block.statements.push_back(std::move(call));
+                input.remove_prefix(step2 + 1);
+            }
         } else if (input[step] == '=') {
             //assignment
             auto step2 = input.find_first_of(";");
@@ -183,8 +192,8 @@ ParamPtr Parser::parse_parameter(std::string_view input) {
     }
 }
 
-IfChainStatementPtr Parser::parse_if_chain(std::string_view input) {
-    trim_sides(input);
+IfChainStatementPtr Parser::parse_if_chain(std::string_view& input) {
+    trim_left(input);
     if (input.substr(0, 2) != "if") {
         throw std::runtime_error("expected if statement");
     }

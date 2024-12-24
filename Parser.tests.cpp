@@ -231,7 +231,7 @@ INSTANTIATE_TEST_SUITE_P(VariableParameterParse, ParamParseVariableTest, ::testi
 ));
 
 TEST(Parser, parse_if_statement_const_parameters) {
-    std::string eg = R"(if ( 1 == 1) {})";
+    std::string_view eg = R"(if ( 1 == 1) {})";
     Parser p;
     auto ifchain = p.parse_if_chain(eg);
     ASSERT_NE(ifchain, nullptr);
@@ -256,7 +256,7 @@ TEST(Parser, parse_if_statement_const_parameters) {
 
 
 TEST(Parser, parse_if_statement_const_and_stack_parameters) {
-    std::string eg = R"(if ( 1 == another) {})";
+    std::string_view eg = R"(if ( 1 == another) {})";
     Parser p;
     auto ifchain = p.parse_if_chain(eg);
     ASSERT_NE(ifchain, nullptr);
@@ -280,7 +280,7 @@ TEST(Parser, parse_if_statement_const_and_stack_parameters) {
 }
 
 TEST(Parser, parse_if_statement_stack_and_const_parameters) {
-    std::string eg = R"(if ( another == 1) {})";
+    std::string_view eg = R"(if ( another == 1) {})";
     Parser p;
     auto ifchain = p.parse_if_chain(eg);
     ASSERT_NE(ifchain, nullptr);
@@ -304,7 +304,7 @@ TEST(Parser, parse_if_statement_stack_and_const_parameters) {
 }
 
 TEST(Parser, parse_if_statement_stack_and_stack_parameters) {
-    std::string eg = R"(if ( another == test ) {})";
+    std::string_view eg = R"(if ( another == test ) {})";
     Parser p;
     auto ifchain = p.parse_if_chain(eg);
     ASSERT_NE(ifchain, nullptr);
@@ -328,7 +328,7 @@ TEST(Parser, parse_if_statement_stack_and_stack_parameters) {
 }
 
 TEST(Parser, parse_if_statement_stack_and_const_parameters_with_block_contents) {
-    std::string eg = R"(if ( another == 1) { another = 2; })";
+    std::string_view eg = R"(if ( another == 1) { another = 2; })";
     Parser p;
     auto ifchain = p.parse_if_chain(eg);
     ASSERT_NE(ifchain, nullptr);
