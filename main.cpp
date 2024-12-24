@@ -118,7 +118,7 @@ void func7() {
     auto call = p.parse_function_call(example);
     InstrBufferx64 i;
     auto compiler = Compiler_x64(&p, &i);
-    compiler.compile_function_call(p, *call, i);
+    compiler.compile_function_call(*call);
     i.ret();
     
     i.execute();
@@ -131,7 +131,7 @@ void func8() {
     auto call = p.parse_function_call(eg);
     InstrBufferx64 i;
     auto compiler = Compiler_x64(&p, &i);
-    compiler.compile_function_call(p, *call, i);
+    compiler.compile_function_call(*call);
     i.ret();
     i.execute();
     printf("\n");

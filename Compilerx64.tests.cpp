@@ -23,7 +23,7 @@ TEST(Compilerx64Tests, compile_function_call_with_intparam) {
     ParsedBlock block;
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_function_call(block, call, buffer);
+    compiler.compile_function_call(call);
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -47,7 +47,7 @@ TEST(Compilerx64Tests, compile_function_call_with_stringparam) {
     ParsedBlock block;
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_function_call(block, call, buffer);
+    compiler.compile_function_call(call);
 
     std::vector<uint8_t> expected;
     //mov rax, imm64
@@ -79,7 +79,7 @@ TEST(Compilerx64Tests, compile_multi_args) {
     ParsedBlock block;
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_function_call(block, call, buffer);
+    compiler.compile_function_call(call);
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -95,7 +95,7 @@ TEST(Compilerx64Tests, compile_block_prefix_0byte_stack) {
     ParsedBlock block;
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_block_prefix(block, buffer);
+    compiler.compile_block_prefix();
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -116,7 +116,7 @@ TEST(Compilerx64Tests, compile_block_prefix_8byte_stack) {
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_block_prefix(block, buffer);
+    compiler.compile_block_prefix();
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -143,7 +143,7 @@ TEST(Compilerx64Tests, compile_block_prefix_16byte_stack) {
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_block_prefix(block, buffer);
+    compiler.compile_block_prefix();
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -159,7 +159,7 @@ TEST(Compilerx64Tests, compile_block_suffix_0byte_stack) {
     ParsedBlock block;
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_block_suffix(block, buffer);
+    compiler.compile_block_suffix();
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -180,7 +180,7 @@ TEST(Compilerx64Tests, compile_block_suffix_8byte_stack) {
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_block_suffix(block, buffer);
+    compiler.compile_block_suffix();
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -207,7 +207,7 @@ TEST(Compilerx64Tests, compile_block_suffix_16byte_stack) {
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_block_suffix(block, buffer);
+    compiler.compile_block_suffix();
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -237,7 +237,7 @@ TEST(Compilerx64Tests, compile_assignment_const_int64) {
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_assignment(block, *rawAssign, buffer);
+    compiler.compile_assignment(*rawAssign);
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -261,7 +261,7 @@ TEST(Compilerx64Tests, compile_assignment_no_var) {
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    EXPECT_THROW(compiler.compile_assignment(block, *rawAssign, buffer), std::bad_expected_access<std::string>);
+    EXPECT_THROW(compiler.compile_assignment(*rawAssign), std::bad_expected_access<std::string>);
 }
 
 TEST(Compilerx64Tests, compile_assignment_const_int64_by_two) {
@@ -287,7 +287,7 @@ TEST(Compilerx64Tests, compile_assignment_const_int64_by_two) {
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_assignment(block, *rawAssign, buffer);
+    compiler.compile_assignment(*rawAssign);
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -321,7 +321,7 @@ TEST(Compilerx64Tests, compile_assignment_stack_var) {
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_assignment(block, *rawAssign, buffer);
+    compiler.compile_assignment(*rawAssign);
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -362,7 +362,7 @@ TEST(Compilerx64Tests, compile_assignment_int_const_operation_addition) {
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_assignment(block, *rawAssign, buffer);
+    compiler.compile_assignment(*rawAssign);
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -412,7 +412,7 @@ TEST(Compilerx64Tests, compile_assignment_operation_int_const_addition_stack_var
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_assignment(block, *rawAssign, buffer);
+    compiler.compile_assignment(*rawAssign);
 
     EXPECT_EQ(
         buffer.buffer(),
@@ -454,7 +454,7 @@ TEST_P(Compilex64ParamStackTest, compile_parameter_to_register_stack_variable) {
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_parameter_to_register(block, &param, dest, buffer);
+    compiler.compile_parameter_to_register(&param, dest);
 
     EXPECT_EQ(buffer.buffer(), check);
 }
@@ -495,7 +495,7 @@ TEST_P(Compilex64ParamInt64Test, compile_parameter_to_register_const_int) {
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_parameter_to_register(block, &param, dest, buffer);
+    compiler.compile_parameter_to_register(&param, dest);
 
     EXPECT_EQ(buffer.buffer(), check);
 }
@@ -539,7 +539,7 @@ TEST(Compilerx64Tests, compile_assignment_int_const_operation_modulo) {
 
     InstrBufferx64 buffer;
     auto compiler = Compiler_x64(&block, &buffer);
-    compiler.compile_assignment(block, *rawAssign, buffer);
+    compiler.compile_assignment(*rawAssign);
 
     EXPECT_EQ(
         buffer.buffer(),

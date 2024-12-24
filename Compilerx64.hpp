@@ -12,6 +12,8 @@ class VariableAssignment;
 
 #include "InstrBufferx64.hpp"
 
+#include <expected>
+
 class Compiler_x64 {
 
 private:
@@ -23,9 +25,14 @@ public:
 
     void compile_block();
 
-    void compile_block_prefix(const ParsedBlock& block, InstrBufferx64& buff);
-    void compile_assignment(const ParsedBlock& block, const VariableAssignment& assignment, InstrBufferx64& buff);
-    void compile_function_call(const ParsedBlock& block, const FunctionCall& call, InstrBufferx64& buff);
-    void compile_parameter_to_register(const ParsedBlock& block, Param* param, InstrBufferx64::Register dest, InstrBufferx64& buff);
-    void compile_block_suffix(const ParsedBlock& block, InstrBufferx64& buff);
+    void compile_block_prefix();
+    void compile_assignment(const VariableAssignment& assignment);
+    void compile_function_call(const FunctionCall& call);
+    void compile_parameter_to_register(Param* param, InstrBufferx64::Register dest);
+    void compile_block_suffix();
+
+    std::expected<int8_t, std::string> get_stack_location(const std::string& variable);
+    
+    void push_many_wo(std::vector<InstrBufferx64::Register> list, InstrBufferx64::Register skip);
+    void pop_many_wo(std::vector<InstrBufferx64::Register> list, InstrBufferx64::Register skip);
 };
