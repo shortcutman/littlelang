@@ -13,29 +13,33 @@
 #include <ranges>
 #include <sstream>
 
-using namespace compiler_x64;
+Compiler_x64::Compiler_x64(ParsedBlock* block, InstrBufferx64* buff)
+: _block(block)
+, _buff(buff)
+{
+}
 
-void compiler_x64::compile_block(const ParsedBlock& block, InstrBufferx64& buff) {
-    compile_block_prefix(block, buff);
+void Compiler_x64::compile_block() {
+    compile_block_prefix(*_block, *_buff);
 
-    for (auto& statement : block.statements) {
+    for (auto& statement : _block->statements) {
         auto call = dynamic_cast<FunctionCall*>(statement.get());
         if (call != nullptr) {
-            compile_function_call(block, *call, buff);
+            compile_function_call(*_block, *call, *_buff);
             continue;
         }
 
         auto assign = dynamic_cast<VariableAssignment*>(statement.get());
         if (assign != nullptr) {
-            compile_assignment(block, *assign, buff);
+            compile_assignment(*_block, *assign, *_buff);
             continue;
         }
     }
 
-    compile_block_suffix(block, buff);
+    compile_block_suffix(*_block, *_buff);
 }
 
-void compiler_x64::compile_function_call(const ParsedBlock& block, const FunctionCall& call, InstrBufferx64& buff) {
+void Compiler_x64::compile_function_call(const ParsedBlock& block, const FunctionCall& call, InstrBufferx64& buff) {
     buff.mov_r64_imm64(
         InstrBufferx64::Register::RAX,
         reinterpret_cast<uint64_t>(call.functionAddr));
@@ -58,7 +62,7 @@ void compiler_x64::compile_function_call(const ParsedBlock& block, const Functio
     buff.call_r64(InstrBufferx64::Register::RAX);
 }
 
-void compiler_x64::compile_block_prefix(const ParsedBlock& block, InstrBufferx64& buff) {
+void Compiler_x64::compile_block_prefix(const ParsedBlock& block, InstrBufferx64& buff) {
     buff.push(InstrBufferx64::Register::RBP);
     buff.mov_r64_r64(InstrBufferx64::Register::RBP, InstrBufferx64::Register::RSP);
 
@@ -73,7 +77,7 @@ void compiler_x64::compile_block_prefix(const ParsedBlock& block, InstrBufferx64
     }
 }
 
-void compiler_x64::compile_block_suffix(const ParsedBlock& block, InstrBufferx64& buff) {
+void Compiler_x64::compile_block_suffix(const ParsedBlock& block, InstrBufferx64& buff) {
     int32_t stackSize = block.vars.size() * 8;
     auto remainder = stackSize % 16;
     if (remainder != 0) {
@@ -119,7 +123,7 @@ namespace {
     }
 }
 
-void compiler_x64::compile_parameter_to_register(const ParsedBlock& block, Param* param, InstrBufferx64::Register dest, InstrBufferx64& buff) {
+void Compiler_x64::compile_parameter_to_register(const ParsedBlock& block, Param* param, InstrBufferx64::Register dest, InstrBufferx64& buff) {
     auto int64param = dynamic_cast<Int64Param*>(param);
     if (int64param) {
         buff.mov_r64_imm64(dest, int64param->content);
@@ -183,7 +187,7 @@ void compiler_x64::compile_parameter_to_register(const ParsedBlock& block, Param
     throw std::runtime_error("Unknown parameter type.");
 }
 
-void compiler_x64::compile_assignment(const ParsedBlock& block, const VariableAssignment& assignment, InstrBufferx64& buff) {
+void Compiler_x64::compile_assignment(const ParsedBlock& block, const VariableAssignment& assignment, InstrBufferx64& buff) {
     auto assignToLocation = get_stack_location(block, assignment.to.content);
 
     compile_parameter_to_register(block, assignment.value.get(), InstrBufferx64::Register::RAX, buff);
