@@ -40,7 +40,6 @@ void Parser::parse_block(std::string_view input) {
         if (step == std::string_view::npos) {
             break;
         } else if (input[step] == '(') {
-
             auto token = input.substr(0, step);
             trim_sides(token);
             if (token == "if") {
@@ -218,7 +217,8 @@ IfChainStatementPtr Parser::parse_if_chain(std::string_view& input) {
                 input.remove_prefix(7);
             }
         } else {
-            throw std::runtime_error("expected if statement");
+            //no longer an if statement
+            break;
         }
         
         std::unique_ptr<IfStatement> ifStatement;
