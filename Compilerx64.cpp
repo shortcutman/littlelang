@@ -274,6 +274,8 @@ void Compiler_x64::compile_comparator(IfStatement* comparison, int32_t offset) {
 
     if (comparison->comparator == IfStatement::Equal) {
         _buff->jmp_not_equal(offset);
+    } else if (comparison->comparator == IfStatement::LessThan) {
+        _buff->jmp_greater_or_equal(offset);
     } else {
         throw std::runtime_error("unhandled comparator");
     }

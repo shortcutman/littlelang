@@ -51,6 +51,7 @@ public:
 
     void cmp(Register a, Register b);
     void jmp_not_equal(int32_t offset);
+    void jmp_greater_or_equal(int32_t offset);
 
     JmpUpdate* jmp_with_update();
     void update_jmp(JmpUpdate* update, int32_t offset);

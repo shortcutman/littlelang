@@ -126,6 +126,12 @@ void InstrBufferx64::jmp_not_equal(int32_t offset) {
     push_dword(offset);
 }
 
+void InstrBufferx64::jmp_greater_or_equal(int32_t offset) {
+    push_byte(0x0f);
+    push_byte(0x8d);
+    push_dword(offset);
+}
+
 InstrBufferx64::JmpUpdate* InstrBufferx64::jmp_with_update() {
     push_byte(0xe9);
     push_dword(0xdeadbeef);
