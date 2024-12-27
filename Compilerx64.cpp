@@ -232,15 +232,16 @@ void Compiler_x64::compile_if_chain(IfChainStatement* chain) {
         }
         auto blockSize = statementBuff.buffer().size();
 
-        compile_parameter_to_register(ifStatement->lhs.get(), InstrBufferx64::Register::RAX);
-        compile_parameter_to_register(ifStatement->rhs.get(), InstrBufferx64::Register::RCX);
-        _buff->cmp(InstrBufferx64::Register::RAX, InstrBufferx64::Register::RCX);
+        if (ifStatement->comparator != IfStatement::None) {
+            compile_parameter_to_register(ifStatement->lhs.get(), InstrBufferx64::Register::RAX);
+            compile_parameter_to_register(ifStatement->rhs.get(), InstrBufferx64::Register::RCX);
+            _buff->cmp(InstrBufferx64::Register::RAX, InstrBufferx64::Register::RCX);
 
-
-        if (ifStatement->comparator == IfStatement::Equal) {
-            _buff->jmp_not_equal(blockSize);
-        } else {
-            throw std::runtime_error("unhandled comparator");
+            if (ifStatement->comparator == IfStatement::Equal) {
+                _buff->jmp_not_equal(blockSize);
+            } else {
+                throw std::runtime_error("unhandled comparator");
+            }
         }
         
         _buff->append_buffer(statementBuff);
