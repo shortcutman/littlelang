@@ -238,15 +238,7 @@ void Compiler_x64::compile_if_chain(IfChainStatement* chain) {
         auto blockSize = statementBuff.buffer().size();
 
         if (ifStatement->comparator != IfStatement::None) {
-            compile_parameter_to_register(ifStatement->lhs.get(), InstrBufferx64::Register::RAX);
-            compile_parameter_to_register(ifStatement->rhs.get(), InstrBufferx64::Register::RCX);
-            _buff->cmp(InstrBufferx64::Register::RAX, InstrBufferx64::Register::RCX);
-
-            if (ifStatement->comparator == IfStatement::Equal) {
-                _buff->jmp_not_equal(blockSize);
-            } else {
-                throw std::runtime_error("unhandled comparator");
-            }
+            compile_comparator(ifStatement.get(), blockSize);
         }
         
         _buff->append_buffer(statementBuff);
@@ -269,16 +261,20 @@ void Compiler_x64::compile_loop(LoopStatement* loop) {
     update = statementBuff.jmp_with_update();
     auto blockSize = statementBuff.buffer().size();
 
-    compile_parameter_to_register(ifStatement->lhs.get(), InstrBufferx64::Register::RAX);
-    compile_parameter_to_register(ifStatement->rhs.get(), InstrBufferx64::Register::RCX);
-    _buff->cmp(InstrBufferx64::Register::RAX, InstrBufferx64::Register::RCX);
-
-    if (ifStatement->comparator == IfStatement::Equal) {
-        _buff->jmp_not_equal(blockSize);
-    } else {
-        throw std::runtime_error("unhandled comparator");
-    }
+    compile_comparator(ifStatement.get(), blockSize);
     
     _buff->append_buffer(statementBuff);
     _buff->update_jmp(update, beforeLoopStatementSize - _buff->buffer().size());
+}
+
+void Compiler_x64::compile_comparator(IfStatement* comparison, int32_t offset) {
+    compile_parameter_to_register(comparison->lhs.get(), InstrBufferx64::Register::RAX);
+    compile_parameter_to_register(comparison->rhs.get(), InstrBufferx64::Register::RCX);
+    _buff->cmp(InstrBufferx64::Register::RAX, InstrBufferx64::Register::RCX);
+
+    if (comparison->comparator == IfStatement::Equal) {
+        _buff->jmp_not_equal(offset);
+    } else {
+        throw std::runtime_error("unhandled comparator");
+    }
 }
