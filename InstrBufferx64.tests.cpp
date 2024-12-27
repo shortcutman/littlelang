@@ -157,7 +157,7 @@ TEST(InstrBufferx64, jmp_with_update) {
         std::vector<uint8_t>({
             0xe9, 0xef, 0xbe, 0xad, 0xde
         }));
-    EXPECT_EQ(update->location, 1);
+    EXPECT_EQ(update->location, 5);
 }
 
 TEST(InstrBufferx64, jmp_with_update_and_do_update) {
@@ -168,7 +168,7 @@ TEST(InstrBufferx64, jmp_with_update_and_do_update) {
         std::vector<uint8_t>({
             0xe9, 0xef, 0xbe, 0xad, 0xde
         }));
-    EXPECT_EQ(update->location, 1);
+    EXPECT_EQ(update->location, 5);
 
     b.update_jmp(update, 0xcafebabe);
     EXPECT_EQ(

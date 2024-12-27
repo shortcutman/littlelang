@@ -128,10 +128,11 @@ void InstrBufferx64::jmp_not_equal(int32_t offset) {
 
 InstrBufferx64::JmpUpdate* InstrBufferx64::jmp_with_update() {
     push_byte(0xe9);
+    push_dword(0xdeadbeef);
     auto update = std::make_unique<JmpUpdate>();
+    update->owner = this;
     update->location = _buffer.size();
     _updates.push_back(std::move(update));
-    push_dword(0xdeadbeef);
     return _updates.back().get();
 }
 
@@ -143,7 +144,7 @@ void InstrBufferx64::update_jmp(JmpUpdate* update, int32_t offset) {
         throw std::runtime_error("unknow update");
     }
 
-    int32_t* memloc = reinterpret_cast<int32_t*>(&_buffer[(*it)->location]);
+    int32_t* memloc = reinterpret_cast<int32_t*>(&_buffer[(*it)->location - 4]);
 
     if (*memloc != 0xdeadbeef) {
         throw std::runtime_error("unexpected contents");
@@ -154,7 +155,18 @@ void InstrBufferx64::update_jmp(JmpUpdate* update, int32_t offset) {
 }
 
 void InstrBufferx64::append_buffer(InstrBufferx64& buffer) {
-    _buffer.append_range(buffer._buffer);
+    auto currentSize = this->_buffer.size();
+    this->_buffer.append_range(buffer._buffer);
+
+    for (auto& update : buffer._updates) {
+        this->_updates.push_back(std::move(update));
+        auto& adjust = this->_updates.back();
+        adjust->owner = this;
+        adjust->location = adjust->location + currentSize;
+    }
+
+    buffer._buffer = std::vector<uint8_t>();
+    buffer._updates = std::vector<std::unique_ptr<JmpUpdate>>();
 }
 
 void InstrBufferx64::push_rexw() {

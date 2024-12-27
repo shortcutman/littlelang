@@ -22,6 +22,7 @@ public:
     };
 
     struct JmpUpdate {
+        InstrBufferx64* owner;
         size_t location;
     };
 
