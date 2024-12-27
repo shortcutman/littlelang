@@ -798,3 +798,51 @@ TEST(Compilerx64Tests, compile_block_with_if_else_statement) {
     );
 }
 
+TEST(Compilerx64Tests, compile_block_with_loop_statement) {
+    Block block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    auto loop = std::make_unique<LoopStatement>();
+    auto loopRaw = loop.get();
+    auto ifstatement = std::make_unique<IfStatement>();
+
+    ifstatement->comparator = IfStatement::Equal;
+    auto stackLhs = std::make_unique<StackVariableParam>();
+    stackLhs->content = "test";
+    ifstatement->lhs = std::move(stackLhs);
+    auto int64Rhs = std::make_unique<Int64Param>();
+    int64Rhs->content = 1234;
+    ifstatement->rhs = std::move(int64Rhs);
+
+    auto assign = std::make_unique<VariableAssignment>();
+    assign->to.content = "test";
+    
+    auto valueParam = std::make_unique<Int64Param>();
+    valueParam->content = 4;
+    assign->value = std::move(valueParam);
+    ifstatement->block.statements.push_back(std::move(assign));
+    ifstatement->block.parent = &block;
+    loop->_ifStatement = std::move(ifstatement);
+    block.statements.push_back(std::move(loop));
+
+    InstrBufferx64 buffer;
+    auto compiler = Compiler_x64(&block, &buffer);
+    compiler.compile_loop(loopRaw);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0x8b, 0x45, 0xf8, //mov rax, [rbp - 0x8]
+            0x48, 0xb9, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rcx, 1234
+            0x48, 0x3b, 0xc1, //cmp rax, rcx
+            0x0f, 0x85, 0x13, 0x00, 0x00, 0x00, //jne 0x13
+            0x48, 0xb8, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, imm64
+            0x48, 0x89, 0x45, 0xf8, //mov [rbp - 0x8], rax
+            0xe9, 0xd6, 0xff, 0xff, 0xff
+        })
+    );
+}

@@ -28,6 +28,7 @@ public:
     void compile_function_call(const FunctionCall& call);
     void compile_parameter_to_register(Param* param, InstrBufferx64::Register dest);
     void compile_if_chain(IfChainStatement* chain);
+    void compile_loop(LoopStatement* loop);
     void compile_block_suffix();
     void compile_function_suffix();
 

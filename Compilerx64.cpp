@@ -56,6 +56,11 @@ void Compiler_x64::compile_block() {
             compile_if_chain(ifchain);
             continue;
         }
+
+        auto loop = dynamic_cast<LoopStatement*>(statement.get());
+        if (loop != nullptr) {
+            compile_loop(loop);
+        }
     }
 
     compile_block_suffix();
@@ -251,4 +256,29 @@ void Compiler_x64::compile_if_chain(IfChainStatement* chain) {
     for (auto update : updates) {
         _buff->update_jmp(update, chainEnd - update->location);
     }
+}
+
+void Compiler_x64::compile_loop(LoopStatement* loop) {
+    InstrBufferx64::JmpUpdate* update = nullptr;
+    auto& ifStatement = loop->_ifStatement;
+    size_t beforeLoopStatementSize = _buff->buffer().size();
+    
+    InstrBufferx64 statementBuff;
+    Compiler_x64 statementCompiler(&ifStatement->block, &statementBuff);
+    statementCompiler.compile_block();
+    update = statementBuff.jmp_with_update();
+    auto blockSize = statementBuff.buffer().size();
+
+    compile_parameter_to_register(ifStatement->lhs.get(), InstrBufferx64::Register::RAX);
+    compile_parameter_to_register(ifStatement->rhs.get(), InstrBufferx64::Register::RCX);
+    _buff->cmp(InstrBufferx64::Register::RAX, InstrBufferx64::Register::RCX);
+
+    if (ifStatement->comparator == IfStatement::Equal) {
+        _buff->jmp_not_equal(blockSize);
+    } else {
+        throw std::runtime_error("unhandled comparator");
+    }
+    
+    _buff->append_buffer(statementBuff);
+    _buff->update_jmp(update, beforeLoopStatementSize - _buff->buffer().size());
 }
