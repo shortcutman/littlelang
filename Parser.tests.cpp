@@ -392,3 +392,9 @@ TEST(Parser, parse_if_else_if_statement_const_parameters) {
     EXPECT_TRUE(ifstatement2->block.statements.empty());
     EXPECT_EQ(ifstatement2->block.parent, &p.block);
 }
+
+TEST(Parser, parse_else_if_errors) {
+    std::string_view eg = R"(else if ( 1 == 1) {})";
+    Parser p;
+    EXPECT_ANY_THROW(p.parse_if_chain(eg));
+}
