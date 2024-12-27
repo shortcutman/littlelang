@@ -146,6 +146,7 @@ struct IfStatement : public Statement {
         }
     }
 };
+typedef std::unique_ptr<IfStatement> IfStatementPtr;
 
 struct IfChainStatement : public Statement {
     virtual ~IfChainStatement() = default;
