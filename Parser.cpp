@@ -205,6 +205,7 @@ IfChainStatementPtr Parser::parse_if_chain(std::string_view& input) {
             if (!ifchain->_ifstatements.empty()) {
                 break;
             }
+            input.remove_prefix(2);
         } else if (input.starts_with("else")) {
             if (ifchain->_ifstatements.empty()) {
                 throw std::runtime_error("unexpected else / else if statement");
@@ -212,32 +213,25 @@ IfChainStatementPtr Parser::parse_if_chain(std::string_view& input) {
 
             if (!input.starts_with("else if")) {
                 closingElse = true;
+                input.remove_prefix(4);
+            } else {
+                input.remove_prefix(7);
             }
         } else {
             throw std::runtime_error("expected if statement");
         }
-
-        auto ifStatement = std::make_unique<IfStatement>();
-        auto comparisonStart = input.find_first_of("({");
-        auto comparatorEnd = input.find_first_of(')');
-        if (comparisonStart == std::string_view::npos ||
-            (!closingElse && comparatorEnd == std::string_view::npos)) {
-            throw std::runtime_error("expected bracket");
-        } else if (closingElse && input[comparisonStart] == '(') {
-            throw std::runtime_error("unexpected bracket for else statement");
-        }
-
-        if (!closingElse) {
-            auto comparison = input.substr(comparisonStart + 1, comparatorEnd - comparisonStart - 1);
-            auto comparator = comparison.find_first_of(IfStatement::comparatorSymbols);
-
-            ifStatement->lhs = parse_parameter(comparison.substr(0, comparator));
-            comparison.remove_prefix(comparator);
-            auto cmpSize = ifStatement->set_cmp_from_sv(comparison.substr(0, 2));
-            comparison.remove_prefix(cmpSize);
-            ifStatement->rhs = parse_parameter(comparison.substr(0));
-
-            input.remove_prefix(comparatorEnd);
+        
+        std::unique_ptr<IfStatement> ifStatement;
+        auto ifStatementExpected = parse_comparator(input);
+        if (ifStatementExpected.has_value()) {
+            if (closingElse) {
+                throw std::runtime_error("unexpected comparator");
+            } else {
+                ifStatement = std::move(ifStatementExpected.value());
+            }
+        } else {
+            ifStatement = std::make_unique<IfStatement>();
+            ifStatement->comparator = IfStatement::None;
         }
 
         auto blockStart = input.find_first_of('{');
@@ -271,24 +265,13 @@ LoopStatementPtr Parser::parse_loop(std::string_view& input) {
     if (!input.starts_with("while")) {
         throw std::runtime_error("expected while statement");
     }
+    input.remove_prefix(5);
 
-    auto ifStatement = std::make_unique<IfStatement>();
-    auto comparisonStart = input.find_first_of("(");
-    auto comparatorEnd = input.find_first_of(')');
-    if (comparisonStart == std::string_view::npos || comparatorEnd == std::string_view::npos) {
-        throw std::runtime_error("expected bracket");
+    auto ifStatementExpected = parse_comparator(input);
+    if (!ifStatementExpected.has_value()) {
+        throw ifStatementExpected.error();
     }
-
-    auto comparison = input.substr(comparisonStart + 1, comparatorEnd - comparisonStart - 1);
-    auto comparator = comparison.find_first_of(IfStatement::comparatorSymbols);
-
-    ifStatement->lhs = parse_parameter(comparison.substr(0, comparator));
-    comparison.remove_prefix(comparator);
-    auto cmpSize = ifStatement->set_cmp_from_sv(comparison.substr(0, 2));
-    comparison.remove_prefix(cmpSize);
-    ifStatement->rhs = parse_parameter(comparison.substr(0));
-
-    input.remove_prefix(comparatorEnd);
+    auto ifStatement = std::move(ifStatementExpected.value());
 
     auto blockStart = input.find_first_of('{');
     auto blockEnd = input.find_first_of('}');
@@ -305,4 +288,31 @@ LoopStatementPtr Parser::parse_loop(std::string_view& input) {
     input.remove_prefix(blockEnd + 1);
 
     return loopStatement;
+}
+
+std::expected<IfStatementPtr, std::string> Parser::parse_comparator(std::string_view& input) {
+    auto ifStatement = std::make_unique<IfStatement>();
+
+    trim_left(input);
+    if (input[0] != '(') {
+        return std::unexpected("Expected opening bracket");
+    }
+    input.remove_prefix(1);
+
+    auto comparatorEnd = input.find_first_of(')');
+    if (comparatorEnd == std::string_view::npos) {
+        return std::unexpected("expected closing bracket");
+    }
+
+    auto comparison = input.substr(0, comparatorEnd);
+    auto comparator = comparison.find_first_of(IfStatement::comparatorSymbols);
+    ifStatement->lhs = parse_parameter(comparison.substr(0, comparator));
+    comparison.remove_prefix(comparator);
+    auto cmpSize = ifStatement->set_cmp_from_sv(comparison.substr(0, 2));
+    comparison.remove_prefix(cmpSize);
+    ifStatement->rhs = parse_parameter(comparison.substr(0));
+
+    input.remove_prefix(comparatorEnd + 1);
+
+    return ifStatement;
 }
