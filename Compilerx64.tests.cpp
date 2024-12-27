@@ -662,3 +662,75 @@ TEST(Compilerx64Tests, compile_block_with_if_statement) {
     );
 }
 
+TEST(Compilerx64Tests, compile_block_with_if_else_if_statement) {
+    Block block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    auto ifchain = std::make_unique<IfChainStatement>();
+    auto ifchainraw = ifchain.get();
+
+    auto ifstatement = std::make_unique<IfStatement>();
+    ifstatement->comparator = IfStatement::Equal;
+    auto stackLhs = std::make_unique<StackVariableParam>();
+    stackLhs->content = "test";
+    ifstatement->lhs = std::move(stackLhs);
+    auto int64Rhs = std::make_unique<Int64Param>();
+    int64Rhs->content = 1234;
+    ifstatement->rhs = std::move(int64Rhs);
+    auto assign = std::make_unique<VariableAssignment>();
+    assign->to.content = "test";
+    auto valueParam = std::make_unique<Int64Param>();
+    valueParam->content = 4;
+    assign->value = std::move(valueParam);
+    ifstatement->block.statements.push_back(std::move(assign));
+    ifstatement->block.parent = &block;
+    ifchain->_ifstatements.push_back(std::move(ifstatement));
+
+    auto ifstatement2 = std::make_unique<IfStatement>();
+    ifstatement2->comparator = IfStatement::Equal;
+    auto stackLhs2 = std::make_unique<StackVariableParam>();
+    stackLhs2->content = "test";
+    ifstatement2->lhs = std::move(stackLhs2);
+    auto int64Rhs2 = std::make_unique<Int64Param>();
+    int64Rhs2->content = 1234;
+    ifstatement2->rhs = std::move(int64Rhs2);
+    auto assign2 = std::make_unique<VariableAssignment>();
+    assign2->to.content = "test";
+    auto valueParam2 = std::make_unique<Int64Param>();
+    valueParam2->content = 4;
+    assign2->value = std::move(valueParam2);
+    ifstatement2->block.statements.push_back(std::move(assign2));
+    ifstatement2->block.parent = &block;
+    ifchain->_ifstatements.push_back(std::move(ifstatement2));
+
+    block.statements.push_back(std::move(ifchain));
+
+    InstrBufferx64 buffer;
+    auto compiler = Compiler_x64(&block, &buffer);
+    compiler.compile_if_chain(ifchainraw);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            //if statement 1
+            0x48, 0x8b, 0x45, 0xf8, //mov rax, [rbp - 0x8]
+            0x48, 0xb9, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rcx, 1234
+            0x48, 0x3b, 0xc1, //cmp rax, rcx
+            0x0f, 0x85, 0x13, 0x00, 0x00, 0x00, //jne 0x0e
+            0x48, 0xb8, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, imm64
+            0x48, 0x89, 0x45, 0xf8, //mov [rbp - 0x8], rax
+            0xe9, 0x25, 0x00, 0x00, 0x00, //jmp 0x25
+            //if statement 2, chained as else if
+            0x48, 0x8b, 0x45, 0xf8, //mov rax, [rbp - 0x8]
+            0x48, 0xb9, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rcx, 1234
+            0x48, 0x3b, 0xc1, //cmp rax, rcx
+            0x0f, 0x85, 0x0e, 0x00, 0x00, 0x00, //jne 0x0e
+            0x48, 0xb8, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, imm64
+            0x48, 0x89, 0x45, 0xf8 //mov [rbp - 0x8], rax
+        })
+    );
+}
