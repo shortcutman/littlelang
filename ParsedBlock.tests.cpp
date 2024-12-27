@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(Parser, parse_many) {
+TEST(ParserBlock, parse_many) {
     std::string_view view(R"(int64 test;test = 123;)");
 
     Parser parser;
@@ -34,7 +34,7 @@ TEST(Parser, parse_many) {
     EXPECT_EQ(value->content, 123);
 }
 
-TEST(Parser, parse_many2) {
+TEST(ParserBlock, parse_many2) {
     std::string eg = R"(int64 test;int64 another;test = 123;another = 1111;)";
     std::string_view view(eg);
 
@@ -66,7 +66,7 @@ TEST(Parser, parse_many2) {
     EXPECT_EQ(value2->content, 123);
 }
 
-TEST(Parser, parse_many3) {
+TEST(ParserBlock, parse_many3) {
     std::string eg = R"(int64 test;test = 123;int64 another;another = 1111;)";
     std::string_view view(eg);
 
@@ -97,7 +97,7 @@ TEST(Parser, parse_many3) {
     EXPECT_EQ(value2->content, 1111);
 }
 
-TEST(Parser, parse_many4) {
+TEST(ParserBlock, parse_many4) {
     std::string eg = R"(int64 test;puts("test");int64 another;)";
     std::string_view view(eg);
 
@@ -120,7 +120,7 @@ TEST(Parser, parse_many4) {
     EXPECT_EQ(assign1->params.size(), 1);
 }
 
-TEST(Parser, parse_whitespace1) {
+TEST(ParserBlock, parse_whitespace1) {
     std::string eg =
         R"(int64 test;
         test = 123;)";
@@ -145,7 +145,7 @@ TEST(Parser, parse_whitespace1) {
     EXPECT_EQ(value->content, 123);
 }
 
-TEST(Parser, parse_whitespace2) {
+TEST(ParserBlock, parse_whitespace2) {
     std::string eg = R"(
     int64 test;
     test = 123;
@@ -181,7 +181,7 @@ TEST(Parser, parse_whitespace2) {
     EXPECT_EQ(value2->content, 1111);
 }
 
-TEST(Parser, parse_if_block) {
+TEST(ParserBlock, parse_if_block) {
     std::string eg = R"(
     int64 test;
     test = 123;
@@ -231,7 +231,7 @@ TEST(Parser, parse_if_block) {
     ASSERT_NE(statement, nullptr);
 }
 
-TEST(Parser, parse_if_block_two_statements) {
+TEST(ParserBlock, parse_if_block_two_statements) {
     std::string eg = R"(
     int64 test;
     test = 123;
