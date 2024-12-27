@@ -50,6 +50,12 @@ void Compiler_x64::compile_block() {
             compile_assignment(*assign);
             continue;
         }
+
+        auto ifchain = dynamic_cast<IfChainStatement*>(statement.get());
+        if (ifchain != nullptr) {
+            compile_if_chain(ifchain);
+            continue;
+        }
     }
 
     compile_block_suffix();
@@ -92,17 +98,37 @@ void Compiler_x64::compile_block_suffix() {
     }
 }
 
-std::expected<int8_t, std::string> Compiler_x64::get_stack_location(const std::string& variable) {
-    for (size_t i = 0; i < _block->vars.size(); i++) {
-        if (_block->vars[i].name == variable) {
-            return (i + 1) * -8;
+namespace {
+
+size_t preceeding_block_sizes(Block& block) {
+    if (block.parent) {
+        return block.stack_size_aligned() + preceeding_block_sizes(*block.parent);
+    } else {
+        return 0;
+    }
+}
+
+std::expected<int8_t, std::string> search_block(Block& block, const std::string& variable) {
+    for (size_t i = 0; i < block.vars.size(); i++) {
+        if (block.vars[i].name == variable) {
+            return (i + 1) * -8 - preceeding_block_sizes(block);
         }
+    }
+
+    if (block.parent) {
+        return search_block(*block.parent, variable);
     }
 
     std::stringstream ss;
     ss << "Cannot find variable name: " << variable;
 
     return std::unexpected(ss.str());
+}
+
+}
+
+std::expected<int8_t, std::string> Compiler_x64::get_stack_location(const std::string& variable) {
+    return search_block(*_block, variable);
 }
 
 void Compiler_x64::push_many_wo(std::vector<InstrBufferx64::Register> list, InstrBufferx64::Register skip) {
@@ -130,8 +156,8 @@ void Compiler_x64::compile_parameter_to_register(Param* param, InstrBufferx64::R
 
     auto stackvarparam = dynamic_cast<StackVariableParam*>(param);
     if (stackvarparam) {
-        auto assignFromLocation = get_stack_location(stackvarparam->content);
-        _buff->mov_r64_stack(dest, assignFromLocation.value());
+        auto assignFromLocation = get_stack_location(stackvarparam->content).value();
+        _buff->mov_r64_stack(dest, assignFromLocation);
         return;
     }
 
@@ -186,9 +212,30 @@ void Compiler_x64::compile_parameter_to_register(Param* param, InstrBufferx64::R
 }
 
 void Compiler_x64::compile_assignment(const VariableAssignment& assignment) {
-    auto assignToLocation = get_stack_location(assignment.to.content);
+    auto assignToLocation = get_stack_location(assignment.to.content).value();
 
     compile_parameter_to_register(assignment.value.get(), InstrBufferx64::Register::RAX);
     
-    _buff->mov_stack_r64(assignToLocation.value(), InstrBufferx64::Register::RAX);
+    _buff->mov_stack_r64(assignToLocation, InstrBufferx64::Register::RAX);
+}
+
+void Compiler_x64::compile_if_chain(IfChainStatement* chain) {
+    for (auto& ifStatement : chain->_ifstatements) {
+        InstrBufferx64 statementBuff;
+        Compiler_x64 statementCompiler(&ifStatement->block, &statementBuff);
+        statementCompiler.compile_block();
+        auto blockSize = statementBuff.buffer().size();
+
+        compile_parameter_to_register(ifStatement->lhs.get(), InstrBufferx64::Register::RAX);
+        compile_parameter_to_register(ifStatement->rhs.get(), InstrBufferx64::Register::RCX);
+        _buff->cmp(InstrBufferx64::Register::RAX, InstrBufferx64::Register::RCX);
+
+        if (ifStatement->comparator == IfStatement::Equal) {
+            _buff->jmp_not_equal(blockSize);
+        } else {
+            throw std::runtime_error("unhandled comparator");
+        }
+        
+        _buff->append_buffer(statementBuff);
+    }
 }

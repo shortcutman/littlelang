@@ -573,3 +573,92 @@ TEST(Compilerx64Tests, compile_assignment_int_const_operation_modulo) {
         })
     );
 }
+
+TEST(Compilerx64Tests, get_stack_location_one_level) {
+    Block block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    Compiler_x64 compiler(&block, nullptr);
+
+    EXPECT_EQ(block.parent, nullptr);
+    EXPECT_EQ(compiler.get_stack_location("test"), -8);
+    EXPECT_ANY_THROW(compiler.get_stack_location("test2").value());
+}
+
+TEST(Compilerx64Tests, get_stack_location_two_levels) {
+    Block block;
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    Block block2;
+    block2.parent = &block;
+    VariableDefinition def2;
+    def2.name = "another";
+    def2.type = VariableDefinition::Int64;
+    block2.vars.push_back(def2);
+
+    Compiler_x64 compiler_onelevel(&block, nullptr);
+    EXPECT_EQ(block.parent, nullptr);
+    EXPECT_EQ(compiler_onelevel.get_stack_location("test").value(), -8);
+    EXPECT_ANY_THROW(compiler_onelevel.get_stack_location("another").value());
+
+    Compiler_x64 compiler_twolevel(&block2, nullptr);
+    EXPECT_EQ(block2.parent, &block);
+    EXPECT_EQ(compiler_twolevel.get_stack_location("test").value(), -8);
+    EXPECT_EQ(compiler_twolevel.get_stack_location("another").value(), -24);
+}
+
+TEST(Compilerx64Tests, compile_block_with_if_statement) {
+    Block block;
+
+    VariableDefinition def;
+    def.name = "test";
+    def.type = VariableDefinition::Int64;
+    block.vars.push_back(def);
+
+    auto ifchain = std::make_unique<IfChainStatement>();
+    auto ifchainraw = ifchain.get();
+    auto ifstatement = std::make_unique<IfStatement>();
+
+    ifstatement->comparator = IfStatement::Equal;
+    auto stackLhs = std::make_unique<StackVariableParam>();
+    stackLhs->content = "test";
+    ifstatement->lhs = std::move(stackLhs);
+    auto int64Rhs = std::make_unique<Int64Param>();
+    int64Rhs->content = 1234;
+    ifstatement->rhs = std::move(int64Rhs);
+
+    auto assign = std::make_unique<VariableAssignment>();
+    assign->to.content = "test";
+    
+    auto valueParam = std::make_unique<Int64Param>();
+    valueParam->content = 4;
+    assign->value = std::move(valueParam);
+    ifstatement->block.statements.push_back(std::move(assign));
+    ifstatement->block.parent = &block;
+    ifchain->_ifstatements.push_back(std::move(ifstatement));
+    block.statements.push_back(std::move(ifchain));
+
+    InstrBufferx64 buffer;
+    auto compiler = Compiler_x64(&block, &buffer);
+    compiler.compile_if_chain(ifchainraw);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0x48, 0x8b, 0x45, 0xf8, //mov rax, [rbp - 0x8]
+            0x48, 0xb9, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rcx, 1234
+            0x48, 0x3b, 0xc1, //cmp rax, rcx
+            0x0f, 0x85, 0x0e, 0x00, 0x00, 0x00, //jne 0x0e
+            0x48, 0xb8, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, imm64
+            0x48, 0x89, 0x45, 0xf8 //mov [rbp - 0x8], rax
+        })
+    );
+}
+
