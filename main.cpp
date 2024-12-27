@@ -142,9 +142,13 @@ void func9() {
     int64 test;
     int64 another;
     another = 4;
-    test = 5 % 3;
+    test = 5 % 1;
     if (test == 2) {
         printf("if success");
+    } else if (test == 1) {
+        printf("else if success");
+    } else if (test == 0) {
+        printf("another one!");
     }
     )";
 
