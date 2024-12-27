@@ -139,17 +139,13 @@ void func8() {
 
 void func9() {
     std::string eg = R"(
-    int64 test;
     int64 another;
-    another = 4;
-    test = 5 % 1;
-    if (test == 2) {
-        printf("if success");
-    } else if (test == 1) {
-        printf("else if success");
-    } else if (test == 0) {
-        printf("another one!");
+    another = 1;
+    while (another < 5) {
+        printf("%i ", another);
+        another = another + 1;
     }
+    printf("another %i", another);
     )";
 
     Parser p;
