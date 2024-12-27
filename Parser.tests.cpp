@@ -254,7 +254,6 @@ TEST(Parser, parse_if_statement_const_parameters) {
     EXPECT_EQ(ifstatement->block.parent, &p.block);
 }
 
-
 TEST(Parser, parse_if_statement_const_and_stack_parameters) {
     std::string_view eg = R"(if ( 1 == another) {})";
     Parser p;
@@ -483,4 +482,27 @@ TEST(Parser, parse_if_else_comparator_error) {
     std::string_view eg = R"(if ( 1 == 1) {} else (2 == 2) {})";
     Parser p;
     EXPECT_ANY_THROW(p.parse_if_chain(eg));
+}
+
+TEST(Parser, parse_while_statement_const_parameters) {
+    std::string_view eg = R"(while ( 1 == 1) {})";
+    Parser p;
+    auto loop = p.parse_loop(eg);
+    ASSERT_NE(loop, nullptr);
+    ASSERT_NE(loop->_ifStatement, nullptr);
+
+    auto ifstatement = loop->_ifStatement.get();
+    EXPECT_EQ(ifstatement->comparator, IfStatement::Equal);
+
+    auto lhs = dynamic_cast<Int64Param*>(ifstatement->lhs.get());
+    ASSERT_NE(lhs, nullptr);
+    EXPECT_EQ(lhs->content, 1);
+
+    auto rhs = dynamic_cast<Int64Param*>(ifstatement->rhs.get());
+    ASSERT_NE(rhs, nullptr);
+    EXPECT_EQ(rhs->content, 1);
+
+    EXPECT_TRUE(ifstatement->block.vars.empty());
+    EXPECT_TRUE(ifstatement->block.statements.empty());
+    EXPECT_EQ(ifstatement->block.parent, &p.block);
 }

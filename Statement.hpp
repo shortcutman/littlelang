@@ -153,3 +153,10 @@ struct IfChainStatement : public Statement {
     std::vector<std::unique_ptr<IfStatement>> _ifstatements;
 };
 typedef std::unique_ptr<IfChainStatement> IfChainStatementPtr;
+
+struct LoopStatement : public Statement {
+    virtual ~LoopStatement() = default;
+
+    std::unique_ptr<IfStatement> _ifStatement;
+};
+typedef std::unique_ptr<LoopStatement> LoopStatementPtr;

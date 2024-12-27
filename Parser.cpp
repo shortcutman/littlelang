@@ -47,6 +47,9 @@ void Parser::parse_block(std::string_view input) {
                 //if statement
                 auto ifchain = parse_if_chain(input);
                 block.statements.push_back(std::move(ifchain));
+            } else if (token == "while") {
+                auto whileStatement = parse_loop(input);
+                block.statements.push_back(std::move(whileStatement));
             } else {
                 //function call
                 auto step2 = input.find_first_of(";");
@@ -259,4 +262,47 @@ IfChainStatementPtr Parser::parse_if_chain(std::string_view& input) {
     }
 
     return ifchain;
+}
+
+LoopStatementPtr Parser::parse_loop(std::string_view& input) {
+    auto loopStatement = std::make_unique<LoopStatement>();
+
+    trim_left(input);
+    if (!input.starts_with("while")) {
+        throw std::runtime_error("expected while statement");
+    }
+
+    auto ifStatement = std::make_unique<IfStatement>();
+    auto comparisonStart = input.find_first_of("(");
+    auto comparatorEnd = input.find_first_of(')');
+    if (comparisonStart == std::string_view::npos || comparatorEnd == std::string_view::npos) {
+        throw std::runtime_error("expected bracket");
+    }
+
+    auto comparison = input.substr(comparisonStart + 1, comparatorEnd - comparisonStart - 1);
+    auto comparator = comparison.find_first_of(IfStatement::comparatorSymbols);
+
+    ifStatement->lhs = parse_parameter(comparison.substr(0, comparator));
+    comparison.remove_prefix(comparator);
+    auto cmpSize = ifStatement->set_cmp_from_sv(comparison.substr(0, 2));
+    comparison.remove_prefix(cmpSize);
+    ifStatement->rhs = parse_parameter(comparison.substr(0));
+
+    input.remove_prefix(comparatorEnd);
+
+    auto blockStart = input.find_first_of('{');
+    auto blockEnd = input.find_first_of('}');
+    if (blockStart == std::string_view::npos || blockEnd == std::string_view::npos) {
+        throw std::runtime_error("couldn't find block delimiters");
+    }
+    auto block = input.substr(blockStart + 1, blockEnd - blockStart - 1);
+
+    Parser parser;
+    parser.parse_block(block);
+    ifStatement->block = std::move(parser.block);
+    ifStatement->block.parent = &this->block;
+    loopStatement->_ifStatement = std::move(ifStatement);
+    input.remove_prefix(blockEnd + 1);
+
+    return loopStatement;
 }
