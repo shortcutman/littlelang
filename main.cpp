@@ -141,11 +141,11 @@ void func9() {
     std::string eg = R"(
     int64 test;
     int64 another;
-    another = 5 % 4;
-    printf("another %i ", another);
-    test = 1 + another;
-    another = test + 1;
-    printf("another with test %i ", another);
+    another = 4;
+    test = 5 % 3;
+    if (test == 2) {
+        printf("if success");
+    }
     )";
 
     Parser p;
