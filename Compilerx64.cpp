@@ -244,8 +244,6 @@ void Compiler_x64::compile_if_chain(IfChainStatement* chain) {
         }
         
         _buff->append_buffer(statementBuff);
-
-
     }
 
     auto chainEnd = _buff->buffer().size();
