@@ -126,6 +126,33 @@ void InstrBufferx64::jmp_not_equal(int32_t offset) {
     push_dword(offset);
 }
 
+InstrBufferx64::JmpUpdate* InstrBufferx64::jmp_with_update() {
+    push_byte(0xe9);
+    auto update = std::make_unique<JmpUpdate>();
+    update->location = _buffer.size();
+    _updates.push_back(std::move(update));
+    push_dword(0xdeadbeef);
+    return _updates.back().get();
+}
+
+void InstrBufferx64::update_jmp(JmpUpdate* update, int32_t offset) {
+    auto it = std::find_if(_updates.begin(), _updates.end(), [update] (const auto& i) {
+        return i.get() == update;
+    });
+    if (it == _updates.end()) {
+        throw std::runtime_error("unknow update");
+    }
+
+    int32_t* memloc = reinterpret_cast<int32_t*>(&_buffer[(*it)->location]);
+
+    if (*memloc != 0xdeadbeef) {
+        throw std::runtime_error("unexpected contents");
+    }
+    *memloc = offset;
+
+    _updates.erase(it);
+}
+
 void InstrBufferx64::append_buffer(InstrBufferx64& buffer) {
     _buffer.append_range(buffer._buffer);
 }

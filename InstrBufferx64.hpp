@@ -9,9 +9,6 @@
 #include <vector>
 
 class InstrBufferx64 {
-private:
-    std::vector<std::uint8_t> _buffer;
-
 public:
     enum class Register {
         RAX = 0,
@@ -23,6 +20,14 @@ public:
         RSI = 6,
         RDI = 7
     };
+
+    struct JmpUpdate {
+        size_t location;
+    };
+
+private:
+    std::vector<std::uint8_t> _buffer;
+    std::vector<std::unique_ptr<JmpUpdate>> _updates;
 
 public:
     InstrBufferx64() {}
@@ -45,6 +50,10 @@ public:
 
     void cmp(Register a, Register b);
     void jmp_not_equal(int32_t offset);
+
+    JmpUpdate* jmp_with_update();
+    void update_jmp(JmpUpdate* update, int32_t offset);
+
     void append_buffer(InstrBufferx64& buffer);
     
     void call_r64(Register dest);

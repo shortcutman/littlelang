@@ -149,6 +149,35 @@ TEST(InstrBufferx64, jmp_not_equal) {
         }));
 }
 
+TEST(InstrBufferx64, jmp_with_update) {
+    InstrBufferx64 b;
+    auto update = b.jmp_with_update();
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({
+            0xe9, 0xef, 0xbe, 0xad, 0xde
+        }));
+    EXPECT_EQ(update->location, 1);
+}
+
+TEST(InstrBufferx64, jmp_with_update_and_do_update) {
+    InstrBufferx64 b;
+    auto update = b.jmp_with_update();
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({
+            0xe9, 0xef, 0xbe, 0xad, 0xde
+        }));
+    EXPECT_EQ(update->location, 1);
+
+    b.update_jmp(update, 0xcafebabe);
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({
+            0xe9, 0xbe, 0xba, 0xfe, 0xca
+        }));
+}
+
 TEST(InstrBufferx64, add_r64_imm32) {
     InstrBufferx64 b;
     b.add_r64_imm32(InstrBufferx64::Register::RSP, 0x10);
