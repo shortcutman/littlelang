@@ -107,14 +107,14 @@ struct IfStatement : public Statement {
     virtual ~IfStatement() = default;
 
     enum Comparator {
-        Unknown,
+        None,
         Equal,
         NotEqual,
         LessThan,
         LessThanOrEqual,
         GreaterThan,
         GreaterThanOrEqual,
-    } comparator = Unknown;
+    } comparator = None;
     std::unique_ptr<Param> lhs;
     std::unique_ptr<Param> rhs;
     Block block;

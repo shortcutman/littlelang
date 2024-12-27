@@ -378,7 +378,7 @@ TEST(Parser, parse_if_else_if_statement_const_parameters) {
     EXPECT_EQ(ifstatement->block.parent, &p.block);
 
     auto ifstatement2 = ifchain->_ifstatements.back().get();
-    EXPECT_EQ(ifstatement->comparator, IfStatement::Equal);
+    EXPECT_EQ(ifstatement2->comparator, IfStatement::Equal);
 
     auto lhs2 = dynamic_cast<Int64Param*>(ifstatement2->lhs.get());
     ASSERT_NE(lhs2, nullptr);
@@ -395,6 +395,92 @@ TEST(Parser, parse_if_else_if_statement_const_parameters) {
 
 TEST(Parser, parse_else_if_errors) {
     std::string_view eg = R"(else if ( 1 == 1) {})";
+    Parser p;
+    EXPECT_ANY_THROW(p.parse_if_chain(eg));
+}
+
+TEST(Parser, parse_if_else_statement_const_parameters) {
+    std::string_view eg = R"(if ( 1 == 1) {} else {})";
+    Parser p;
+    auto ifchain = p.parse_if_chain(eg);
+    ASSERT_NE(ifchain, nullptr);
+    ASSERT_FALSE(ifchain->_ifstatements.empty());
+    EXPECT_EQ(ifchain->_ifstatements.size(), 2);
+
+    auto ifstatement = ifchain->_ifstatements.front().get();
+    EXPECT_EQ(ifstatement->comparator, IfStatement::Equal);
+
+    auto lhs = dynamic_cast<Int64Param*>(ifstatement->lhs.get());
+    ASSERT_NE(lhs, nullptr);
+    EXPECT_EQ(lhs->content, 1);
+
+    auto rhs = dynamic_cast<Int64Param*>(ifstatement->rhs.get());
+    ASSERT_NE(rhs, nullptr);
+    EXPECT_EQ(rhs->content, 1);
+
+    EXPECT_TRUE(ifstatement->block.vars.empty());
+    EXPECT_TRUE(ifstatement->block.statements.empty());
+    EXPECT_EQ(ifstatement->block.parent, &p.block);
+
+    auto ifstatement2 = ifchain->_ifstatements.back().get();
+    EXPECT_EQ(ifstatement2->comparator, IfStatement::None);
+    EXPECT_EQ(ifstatement2->lhs.get(), nullptr);
+    EXPECT_EQ(ifstatement2->rhs.get(), nullptr);
+    EXPECT_TRUE(ifstatement2->block.vars.empty());
+    EXPECT_TRUE(ifstatement2->block.statements.empty());
+    EXPECT_EQ(ifstatement2->block.parent, &p.block);
+}
+
+TEST(Parser, parse_if_else_if_else_statement_const_parameters) {
+    std::string_view eg = R"(if ( 1 == 1) {} else if ( 2 == 2 ) {} else {})";
+    Parser p;
+    auto ifchain = p.parse_if_chain(eg);
+    ASSERT_NE(ifchain, nullptr);
+    ASSERT_FALSE(ifchain->_ifstatements.empty());
+    EXPECT_EQ(ifchain->_ifstatements.size(), 3);
+
+    auto ifstatement = ifchain->_ifstatements[0].get();
+    EXPECT_EQ(ifstatement->comparator, IfStatement::Equal);
+    auto lhs = dynamic_cast<Int64Param*>(ifstatement->lhs.get());
+    ASSERT_NE(lhs, nullptr);
+    EXPECT_EQ(lhs->content, 1);
+    auto rhs = dynamic_cast<Int64Param*>(ifstatement->rhs.get());
+    ASSERT_NE(rhs, nullptr);
+    EXPECT_EQ(rhs->content, 1);
+    EXPECT_TRUE(ifstatement->block.vars.empty());
+    EXPECT_TRUE(ifstatement->block.statements.empty());
+    EXPECT_EQ(ifstatement->block.parent, &p.block);
+
+    auto ifstatement2 = ifchain->_ifstatements[1].get();
+    EXPECT_EQ(ifstatement2->comparator, IfStatement::Equal);
+    auto lhs2 = dynamic_cast<Int64Param*>(ifstatement2->lhs.get());
+    ASSERT_NE(lhs2, nullptr);
+    EXPECT_EQ(lhs2->content, 2);
+    auto rhs2 = dynamic_cast<Int64Param*>(ifstatement2->rhs.get());
+    ASSERT_NE(rhs2, nullptr);
+    EXPECT_EQ(rhs2->content, 2);
+    EXPECT_TRUE(ifstatement2->block.vars.empty());
+    EXPECT_TRUE(ifstatement2->block.statements.empty());
+    EXPECT_EQ(ifstatement2->block.parent, &p.block);
+
+    auto ifstatement3 = ifchain->_ifstatements[2].get();
+    EXPECT_EQ(ifstatement3->comparator, IfStatement::None);
+    EXPECT_EQ(ifstatement3->lhs.get(), nullptr);
+    EXPECT_EQ(ifstatement3->rhs.get(), nullptr);
+    EXPECT_TRUE(ifstatement3->block.vars.empty());
+    EXPECT_TRUE(ifstatement3->block.statements.empty());
+    EXPECT_EQ(ifstatement3->block.parent, &p.block);
+}
+
+TEST(Parser, parse_if_else_else_if_error) {
+    std::string_view eg = R"(if ( 1 == 1) {} else {} else if (2 == 2) {})";
+    Parser p;
+    EXPECT_NO_THROW(p.parse_if_chain(eg));
+    EXPECT_ANY_THROW(p.parse_if_chain(eg));
+}
+
+TEST(Parser, parse_if_else_comparator_error) {
+    std::string_view eg = R"(if ( 1 == 1) {} else (2 == 2) {})";
     Parser p;
     EXPECT_ANY_THROW(p.parse_if_chain(eg));
 }

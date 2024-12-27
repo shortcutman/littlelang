@@ -197,35 +197,46 @@ IfChainStatementPtr Parser::parse_if_chain(std::string_view& input) {
 
     trim_left(input);
     while (!input.empty()) {
+        bool closingElse = false;
         if (input.starts_with("if")) {
             if (!ifchain->_ifstatements.empty()) {
                 break;
             }
-        } else if (input.starts_with("else if")) {
+        } else if (input.starts_with("else")) {
             if (ifchain->_ifstatements.empty()) {
-                throw std::runtime_error("unexpected else if statement");
+                throw std::runtime_error("unexpected else / else if statement");
+            }
+
+            if (!input.starts_with("else if")) {
+                closingElse = true;
             }
         } else {
             throw std::runtime_error("expected if statement");
         }
 
         auto ifStatement = std::make_unique<IfStatement>();
-        auto comparisonStart = input.find_first_of('(');
+        auto comparisonStart = input.find_first_of("({");
         auto comparatorEnd = input.find_first_of(')');
-        if (comparisonStart == std::string_view::npos || comparatorEnd == std::string_view::npos) {
+        if (comparisonStart == std::string_view::npos ||
+            (!closingElse && comparatorEnd == std::string_view::npos)) {
             throw std::runtime_error("expected bracket");
+        } else if (closingElse && input[comparisonStart] == '(') {
+            throw std::runtime_error("unexpected bracket for else statement");
         }
 
-        auto comparison = input.substr(comparisonStart + 1, comparatorEnd - comparisonStart - 1);
-        auto comparator = comparison.find_first_of(IfStatement::comparatorSymbols);
+        if (!closingElse) {
+            auto comparison = input.substr(comparisonStart + 1, comparatorEnd - comparisonStart - 1);
+            auto comparator = comparison.find_first_of(IfStatement::comparatorSymbols);
 
-        ifStatement->lhs = parse_parameter(comparison.substr(0, comparator));
-        comparison.remove_prefix(comparator);
-        auto cmpSize = ifStatement->set_cmp_from_sv(comparison.substr(0, 2));
-        comparison.remove_prefix(cmpSize);
-        ifStatement->rhs = parse_parameter(comparison.substr(0));
+            ifStatement->lhs = parse_parameter(comparison.substr(0, comparator));
+            comparison.remove_prefix(comparator);
+            auto cmpSize = ifStatement->set_cmp_from_sv(comparison.substr(0, 2));
+            comparison.remove_prefix(cmpSize);
+            ifStatement->rhs = parse_parameter(comparison.substr(0));
 
-        input.remove_prefix(comparatorEnd);
+            input.remove_prefix(comparatorEnd);
+        }
+
         auto blockStart = input.find_first_of('{');
         auto blockEnd = input.find_first_of('}');
         if (blockStart == std::string_view::npos || blockEnd == std::string_view::npos) {
@@ -241,6 +252,10 @@ IfChainStatementPtr Parser::parse_if_chain(std::string_view& input) {
         trim_left(input);
 
         ifchain->_ifstatements.push_back(std::move(ifStatement));
+
+        if (closingElse) {
+            break;
+        }
     }
 
     return ifchain;
