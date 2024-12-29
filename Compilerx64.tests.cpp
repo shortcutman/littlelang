@@ -640,8 +640,9 @@ TEST(Compilerx64Tests, compile_block_with_if_statement) {
     auto valueParam = std::make_unique<Int64Param>();
     valueParam->content = 4;
     assign->value = std::move(valueParam);
-    ifstatement->block.statements.push_back(std::move(assign));
-    ifstatement->block.parent = &block;
+    ifstatement->block = std::make_unique<Block>();
+    ifstatement->block->statements.push_back(std::move(assign));
+    ifstatement->block->parent = &block;
     ifchain->_ifstatements.push_back(std::move(ifstatement));
     block.statements.push_back(std::move(ifchain));
 
@@ -686,8 +687,9 @@ TEST(Compilerx64Tests, compile_block_with_if_else_if_statement) {
     auto valueParam = std::make_unique<Int64Param>();
     valueParam->content = 4;
     assign->value = std::move(valueParam);
-    ifstatement->block.statements.push_back(std::move(assign));
-    ifstatement->block.parent = &block;
+    ifstatement->block = std::make_unique<Block>();
+    ifstatement->block->statements.push_back(std::move(assign));
+    ifstatement->block->parent = &block;
     ifchain->_ifstatements.push_back(std::move(ifstatement));
 
     auto ifstatement2 = std::make_unique<IfStatement>();
@@ -703,8 +705,9 @@ TEST(Compilerx64Tests, compile_block_with_if_else_if_statement) {
     auto valueParam2 = std::make_unique<Int64Param>();
     valueParam2->content = 4;
     assign2->value = std::move(valueParam2);
-    ifstatement2->block.statements.push_back(std::move(assign2));
-    ifstatement2->block.parent = &block;
+    ifstatement2->block = std::make_unique<Block>();
+    ifstatement2->block->statements.push_back(std::move(assign2));
+    ifstatement2->block->parent = &block;
     ifchain->_ifstatements.push_back(std::move(ifstatement2));
 
     block.statements.push_back(std::move(ifchain));
@@ -759,8 +762,9 @@ TEST(Compilerx64Tests, compile_block_with_if_else_statement) {
     auto valueParam = std::make_unique<Int64Param>();
     valueParam->content = 4;
     assign->value = std::move(valueParam);
-    ifstatement->block.statements.push_back(std::move(assign));
-    ifstatement->block.parent = &block;
+    ifstatement->block = std::make_unique<Block>();
+    ifstatement->block->statements.push_back(std::move(assign));
+    ifstatement->block->parent = &block;
     ifchain->_ifstatements.push_back(std::move(ifstatement));
 
     auto ifstatement2 = std::make_unique<IfStatement>();
@@ -770,8 +774,9 @@ TEST(Compilerx64Tests, compile_block_with_if_else_statement) {
     auto valueParam2 = std::make_unique<Int64Param>();
     valueParam2->content = 4;
     assign2->value = std::move(valueParam2);
-    ifstatement2->block.statements.push_back(std::move(assign2));
-    ifstatement2->block.parent = &block;
+    ifstatement2->block = std::make_unique<Block>();
+    ifstatement2->block->statements.push_back(std::move(assign2));
+    ifstatement2->block->parent = &block;
     ifchain->_ifstatements.push_back(std::move(ifstatement2));
 
     block.statements.push_back(std::move(ifchain));
@@ -824,8 +829,9 @@ TEST(Compilerx64Tests, compile_block_with_loop_statement) {
     auto valueParam = std::make_unique<Int64Param>();
     valueParam->content = 4;
     assign->value = std::move(valueParam);
-    ifstatement->block.statements.push_back(std::move(assign));
-    ifstatement->block.parent = &block;
+    ifstatement->block = std::make_unique<Block>();
+    ifstatement->block->statements.push_back(std::move(assign));
+    ifstatement->block->parent = &block;
     loop->_ifStatement = std::move(ifstatement);
     block.statements.push_back(std::move(loop));
 

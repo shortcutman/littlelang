@@ -117,7 +117,7 @@ struct IfStatement : public Statement {
     } comparator = None;
     std::unique_ptr<Param> lhs;
     std::unique_ptr<Param> rhs;
-    Block block;
+    std::unique_ptr<Block> block;
 
     static constexpr std::string_view comparatorSymbols = "=!<>";
 

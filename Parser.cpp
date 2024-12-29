@@ -32,6 +32,11 @@ namespace {
     }
 }
 
+Parser::Parser()
+: block(std::make_unique<Block>())
+{
+}
+
 void Parser::parse_block(std::string_view input) {
     std::array<char, 3> steps = { '(', '=', ' ' };
 
@@ -45,16 +50,16 @@ void Parser::parse_block(std::string_view input) {
             if (token == "if") {
                 //if statement
                 auto ifchain = parse_if_chain(input);
-                block.statements.push_back(std::move(ifchain));
+                block->statements.push_back(std::move(ifchain));
             } else if (token == "while") {
                 auto whileStatement = parse_loop(input);
-                block.statements.push_back(std::move(whileStatement));
+                block->statements.push_back(std::move(whileStatement));
             } else {
                 //function call
                 auto step2 = input.find_first_of(";");
                 std::string_view statement(input.begin(), input.begin() + step2 + 1);
                 auto call = parse_function_call(statement);
-                block.statements.push_back(std::move(call));
+                block->statements.push_back(std::move(call));
                 input.remove_prefix(step2 + 1);
             }
         } else if (input[step] == '=') {
@@ -62,13 +67,13 @@ void Parser::parse_block(std::string_view input) {
             auto step2 = input.find_first_of(";");
             std::string_view statement(input.begin(), input.begin() + step2 + 1);
             auto assignment = parse_variable_assignment(statement);
-            block.statements.push_back(std::move(assignment));
+            block->statements.push_back(std::move(assignment));
             input.remove_prefix(step2 + 1);
         } else if (input[step] == ';') {
             //variable definition
             std::string_view statement(input.begin(), input.begin() + step + 1);
             auto def = parse_variable_definition(statement);
-            block.vars.push_back(def);
+            block->vars.push_back(def);
             input.remove_prefix(step + 1);
         } else {
             throw std::runtime_error("unknown section");
@@ -244,7 +249,7 @@ IfChainStatementPtr Parser::parse_if_chain(std::string_view& input) {
         Parser parser;
         parser.parse_block(block);
         ifStatement->block = std::move(parser.block);
-        ifStatement->block.parent = &this->block;
+        ifStatement->block->parent = this->block.get();
         input.remove_prefix(blockEnd + 1);
         trim_left(input);
 
@@ -283,7 +288,7 @@ LoopStatementPtr Parser::parse_loop(std::string_view& input) {
     Parser parser;
     parser.parse_block(block);
     ifStatement->block = std::move(parser.block);
-    ifStatement->block.parent = &this->block;
+    ifStatement->block->parent = this->block.get();
     loopStatement->_ifStatement = std::move(ifStatement);
     input.remove_prefix(blockEnd + 1);
 

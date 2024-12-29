@@ -15,9 +15,11 @@
 
 class Parser {
 public:
-    Block block;
+    std::unique_ptr<Block> block;
 
 public:
+    Parser();
+
     void parse_block(std::string_view input);
 
     VariableDefinition parse_variable_definition(std::string_view input);

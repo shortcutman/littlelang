@@ -16,7 +16,7 @@ TEST(ParserBlock, parse_many) {
     Parser parser;
     parser.parse_block(view);
 
-    auto& block = parser.block;
+    auto& block = *parser.block;
 
     EXPECT_EQ(block.vars.size(), 1);
     EXPECT_EQ(block.vars.front().name, "test");
@@ -41,7 +41,7 @@ TEST(ParserBlock, parse_many2) {
     Parser parser;
     parser.parse_block(view);
 
-    auto& block = parser.block;
+    auto& block = *parser.block;
 
     EXPECT_EQ(block.vars.size(), 2);
     EXPECT_EQ(block.vars[0].name, "test");
@@ -71,7 +71,7 @@ TEST(ParserBlock, parse_many3) {
     std::string_view view(eg);
 
     Parser parser;
-    auto& block = parser.block;
+    auto& block = *parser.block;
     parser.parse_block(view);
 
     EXPECT_EQ(block.vars.size(), 2);
@@ -104,7 +104,7 @@ TEST(ParserBlock, parse_many4) {
     Parser parser;
     parser.parse_block(view);
 
-    auto& block = parser.block;
+    auto& block = *parser.block;
 
     EXPECT_EQ(block.vars.size(), 2);
     EXPECT_EQ(block.vars[0].name, "test");
@@ -129,7 +129,7 @@ TEST(ParserBlock, parse_whitespace1) {
     Parser parser;
     parser.parse_block(view);
 
-    auto& block = parser.block;
+    auto& block = *parser.block;
 
     EXPECT_EQ(block.vars.size(), 1);
     EXPECT_EQ(block.vars.front().name, "test");
@@ -156,7 +156,7 @@ TEST(ParserBlock, parse_whitespace2) {
     Parser parser;
     parser.parse_block(view);
 
-    auto& block = parser.block;
+    auto& block = *parser.block;
 
     EXPECT_EQ(block.vars.size(), 2);
     EXPECT_EQ(block.vars[0].name, "test");
@@ -194,7 +194,7 @@ TEST(ParserBlock, parse_if_block) {
     Parser parser;
     parser.parse_block(view);
 
-    auto& block = parser.block;
+    auto& block = *parser.block;
 
     EXPECT_EQ(block.vars.size(), 1);
     EXPECT_EQ(block.vars[0].name, "test");
@@ -223,11 +223,11 @@ TEST(ParserBlock, parse_if_block) {
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, 123);
 
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_EQ(ifstatement->block.statements.size(), 1);
-    EXPECT_EQ(ifstatement->block.parent, &parser.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_EQ(ifstatement->block->statements.size(), 1);
+    EXPECT_EQ(ifstatement->block->parent, parser.block.get());
 
-    auto statement = dynamic_cast<FunctionCall*>(ifstatement->block.statements.front().get());
+    auto statement = dynamic_cast<FunctionCall*>(ifstatement->block->statements.front().get());
     ASSERT_NE(statement, nullptr);
 }
 
@@ -245,7 +245,7 @@ TEST(ParserBlock, parse_if_block_two_statements) {
     Parser parser;
     parser.parse_block(view);
 
-    auto& block = parser.block;
+    auto& block = *parser.block;
 
     EXPECT_EQ(block.vars.size(), 1);
     EXPECT_EQ(block.vars[0].name, "test");
@@ -274,14 +274,14 @@ TEST(ParserBlock, parse_if_block_two_statements) {
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, 123);
 
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_EQ(ifstatement->block.statements.size(), 2);
-    EXPECT_EQ(ifstatement->block.parent, &parser.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_EQ(ifstatement->block->statements.size(), 2);
+    EXPECT_EQ(ifstatement->block->parent, parser.block.get());
 
-    auto statement1 = dynamic_cast<VariableAssignment*>(ifstatement->block.statements[0].get());
+    auto statement1 = dynamic_cast<VariableAssignment*>(ifstatement->block->statements[0].get());
     ASSERT_NE(statement1, nullptr);
 
-    auto statement2 = dynamic_cast<FunctionCall*>(ifstatement->block.statements[1].get());
+    auto statement2 = dynamic_cast<FunctionCall*>(ifstatement->block->statements[1].get());
     ASSERT_NE(statement2, nullptr);
 }
 
@@ -301,7 +301,7 @@ TEST(ParserBlock, parse_multiple_if_blocks) {
     Parser parser;
     parser.parse_block(view);
 
-    auto& block = parser.block;
+    auto& block = *parser.block;
 
     EXPECT_EQ(block.vars.size(), 1);
     EXPECT_EQ(block.vars[0].name, "test");
@@ -330,11 +330,11 @@ TEST(ParserBlock, parse_multiple_if_blocks) {
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, 123);
 
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_EQ(ifstatement->block.statements.size(), 1);
-    EXPECT_EQ(ifstatement->block.parent, &parser.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_EQ(ifstatement->block->statements.size(), 1);
+    EXPECT_EQ(ifstatement->block->parent, parser.block.get());
 
-    auto statement = dynamic_cast<FunctionCall*>(ifstatement->block.statements.front().get());
+    auto statement = dynamic_cast<FunctionCall*>(ifstatement->block->statements.front().get());
     ASSERT_NE(statement, nullptr);
 
     auto ifchain2 = dynamic_cast<IfChainStatement*>(block.statements[2].get());
@@ -351,10 +351,10 @@ TEST(ParserBlock, parse_multiple_if_blocks) {
     ASSERT_NE(rhs2, nullptr);
     EXPECT_EQ(rhs2->content, 444);
 
-    EXPECT_TRUE(ifstatement2->block.vars.empty());
-    EXPECT_EQ(ifstatement2->block.statements.size(), 1);
-    EXPECT_EQ(ifstatement2->block.parent, &parser.block);
+    EXPECT_TRUE(ifstatement2->block->vars.empty());
+    EXPECT_EQ(ifstatement2->block->statements.size(), 1);
+    EXPECT_EQ(ifstatement2->block->parent, parser.block.get());
 
-    auto statement2 = dynamic_cast<FunctionCall*>(ifstatement2->block.statements.front().get());
+    auto statement2 = dynamic_cast<FunctionCall*>(ifstatement2->block->statements.front().get());
     ASSERT_NE(statement2, nullptr);
 }

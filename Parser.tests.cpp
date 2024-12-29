@@ -249,9 +249,9 @@ TEST(Parser, parse_if_statement_const_parameters) {
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, 1);
 
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_TRUE(ifstatement->block.statements.empty());
-    EXPECT_EQ(ifstatement->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_TRUE(ifstatement->block->statements.empty());
+    EXPECT_EQ(ifstatement->block->parent, p.block.get());
 }
 
 TEST(Parser, parse_if_statement_const_and_stack_parameters) {
@@ -273,9 +273,9 @@ TEST(Parser, parse_if_statement_const_and_stack_parameters) {
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, "another");
 
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_TRUE(ifstatement->block.statements.empty());
-    EXPECT_EQ(ifstatement->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_TRUE(ifstatement->block->statements.empty());
+    EXPECT_EQ(ifstatement->block->parent, p.block.get());
 }
 
 TEST(Parser, parse_if_statement_stack_and_const_parameters) {
@@ -297,9 +297,9 @@ TEST(Parser, parse_if_statement_stack_and_const_parameters) {
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, 1);
 
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_TRUE(ifstatement->block.statements.empty());
-    EXPECT_EQ(ifstatement->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_TRUE(ifstatement->block->statements.empty());
+    EXPECT_EQ(ifstatement->block->parent, p.block.get());
 }
 
 TEST(Parser, parse_if_statement_stack_and_stack_parameters) {
@@ -321,9 +321,9 @@ TEST(Parser, parse_if_statement_stack_and_stack_parameters) {
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, "test");
 
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_TRUE(ifstatement->block.statements.empty());
-    EXPECT_EQ(ifstatement->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_TRUE(ifstatement->block->statements.empty());
+    EXPECT_EQ(ifstatement->block->parent, p.block.get());
 }
 
 TEST(Parser, parse_if_statement_stack_and_const_parameters_with_block_contents) {
@@ -345,11 +345,11 @@ TEST(Parser, parse_if_statement_stack_and_const_parameters_with_block_contents) 
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, 1);
 
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_EQ(ifstatement->block.statements.size(), 1);
-    EXPECT_EQ(ifstatement->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_EQ(ifstatement->block->statements.size(), 1);
+    EXPECT_EQ(ifstatement->block->parent, p.block.get());
 
-    auto statement = dynamic_cast<VariableAssignment*>(ifstatement->block.statements.front().get());
+    auto statement = dynamic_cast<VariableAssignment*>(ifstatement->block->statements.front().get());
     ASSERT_NE(statement, nullptr);
 }
 
@@ -372,9 +372,9 @@ TEST(Parser, parse_if_else_if_statement_const_parameters) {
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, 1);
 
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_TRUE(ifstatement->block.statements.empty());
-    EXPECT_EQ(ifstatement->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_TRUE(ifstatement->block->statements.empty());
+    EXPECT_EQ(ifstatement->block->parent, p.block.get());
 
     auto ifstatement2 = ifchain->_ifstatements.back().get();
     EXPECT_EQ(ifstatement2->comparator, IfStatement::Equal);
@@ -387,9 +387,9 @@ TEST(Parser, parse_if_else_if_statement_const_parameters) {
     ASSERT_NE(rhs2, nullptr);
     EXPECT_EQ(rhs2->content, 2);
 
-    EXPECT_TRUE(ifstatement2->block.vars.empty());
-    EXPECT_TRUE(ifstatement2->block.statements.empty());
-    EXPECT_EQ(ifstatement2->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement2->block->vars.empty());
+    EXPECT_TRUE(ifstatement2->block->statements.empty());
+    EXPECT_EQ(ifstatement2->block->parent, p.block.get());
 }
 
 TEST(Parser, parse_else_if_errors) {
@@ -417,17 +417,17 @@ TEST(Parser, parse_if_else_statement_const_parameters) {
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, 1);
 
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_TRUE(ifstatement->block.statements.empty());
-    EXPECT_EQ(ifstatement->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_TRUE(ifstatement->block->statements.empty());
+    EXPECT_EQ(ifstatement->block->parent, p.block.get());
 
     auto ifstatement2 = ifchain->_ifstatements.back().get();
     EXPECT_EQ(ifstatement2->comparator, IfStatement::None);
     EXPECT_EQ(ifstatement2->lhs.get(), nullptr);
     EXPECT_EQ(ifstatement2->rhs.get(), nullptr);
-    EXPECT_TRUE(ifstatement2->block.vars.empty());
-    EXPECT_TRUE(ifstatement2->block.statements.empty());
-    EXPECT_EQ(ifstatement2->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement2->block->vars.empty());
+    EXPECT_TRUE(ifstatement2->block->statements.empty());
+    EXPECT_EQ(ifstatement2->block->parent, p.block.get());
 }
 
 TEST(Parser, parse_if_else_if_else_statement_const_parameters) {
@@ -446,9 +446,9 @@ TEST(Parser, parse_if_else_if_else_statement_const_parameters) {
     auto rhs = dynamic_cast<Int64Param*>(ifstatement->rhs.get());
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, 1);
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_TRUE(ifstatement->block.statements.empty());
-    EXPECT_EQ(ifstatement->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_TRUE(ifstatement->block->statements.empty());
+    EXPECT_EQ(ifstatement->block->parent, p.block.get());
 
     auto ifstatement2 = ifchain->_ifstatements[1].get();
     EXPECT_EQ(ifstatement2->comparator, IfStatement::Equal);
@@ -458,17 +458,17 @@ TEST(Parser, parse_if_else_if_else_statement_const_parameters) {
     auto rhs2 = dynamic_cast<Int64Param*>(ifstatement2->rhs.get());
     ASSERT_NE(rhs2, nullptr);
     EXPECT_EQ(rhs2->content, 2);
-    EXPECT_TRUE(ifstatement2->block.vars.empty());
-    EXPECT_TRUE(ifstatement2->block.statements.empty());
-    EXPECT_EQ(ifstatement2->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement2->block->vars.empty());
+    EXPECT_TRUE(ifstatement2->block->statements.empty());
+    EXPECT_EQ(ifstatement2->block->parent, p.block.get());
 
     auto ifstatement3 = ifchain->_ifstatements[2].get();
     EXPECT_EQ(ifstatement3->comparator, IfStatement::None);
     EXPECT_EQ(ifstatement3->lhs.get(), nullptr);
     EXPECT_EQ(ifstatement3->rhs.get(), nullptr);
-    EXPECT_TRUE(ifstatement3->block.vars.empty());
-    EXPECT_TRUE(ifstatement3->block.statements.empty());
-    EXPECT_EQ(ifstatement3->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement3->block->vars.empty());
+    EXPECT_TRUE(ifstatement3->block->statements.empty());
+    EXPECT_EQ(ifstatement3->block->parent, p.block.get());
 }
 
 TEST(Parser, parse_if_else_else_if_error) {
@@ -503,9 +503,9 @@ TEST(Parser, parse_if_statement_and_following) {
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, 1);
 
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_TRUE(ifstatement->block.statements.empty());
-    EXPECT_EQ(ifstatement->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_TRUE(ifstatement->block->statements.empty());
+    EXPECT_EQ(ifstatement->block->parent, p.block.get());
 }
 
 TEST(Parser, parse_while_statement_const_parameters) {
@@ -526,7 +526,7 @@ TEST(Parser, parse_while_statement_const_parameters) {
     ASSERT_NE(rhs, nullptr);
     EXPECT_EQ(rhs->content, 1);
 
-    EXPECT_TRUE(ifstatement->block.vars.empty());
-    EXPECT_TRUE(ifstatement->block.statements.empty());
-    EXPECT_EQ(ifstatement->block.parent, &p.block);
+    EXPECT_TRUE(ifstatement->block->vars.empty());
+    EXPECT_TRUE(ifstatement->block->statements.empty());
+    EXPECT_EQ(ifstatement->block->parent, p.block.get());
 }
