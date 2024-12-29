@@ -168,15 +168,50 @@ void func9() {
     i.execute();
 }
 
+void fizzbuzz() {
+    std::string eg = R"(
+    int64 counter;
+    counter = 1;
+    while (counter < 100) {
+        int64 mod3;
+        mod3 = counter % 3;
+
+        int64 mod5;
+        mod5 = counter % 5;
+        if (mod3 == 0) {
+            if (mod5 == 0) {
+                printf("FizzBuzz");
+            } else {
+                printf("Fizz");
+            }
+        } else if (mod5 == 0) {
+            printf("Buzz");
+        } else {
+            printf("%i", counter);
+        }
+        counter = counter + 1;
+        puts("");
+    }
+    )";
+
+    Parser p;
+    p.parse_block(eg);
+    InstrBufferx64 i;
+    auto compiler = Compiler_x64(p.block.get(), &i);
+    compiler.compile_function();
+    i.execute();
+}
+
 int main() {
-    anotherfunction();
-    func2();
-    func3();
-    func4();
-    func5();
-    func6();
-    func7();
-    func8();
-    func9();
+    // anotherfunction();
+    // func2();
+    // func3();
+    // func4();
+    // func5();
+    // func6();
+    // func7();
+    // func8();
+    // func9();
+    fizzbuzz();
     return 0;
 }
