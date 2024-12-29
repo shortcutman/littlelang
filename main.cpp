@@ -141,11 +141,23 @@ void func9() {
     std::string eg = R"(
     int64 another;
     another = 1;
-    while (another < 5) {
-        printf("%i ", another);
+    while (another < 10) {
+        if (another < 5) {
+            puts("another is less than 5");
+        } else if (another < 10) {
+            puts("another is less than 10");
+        }
         another = another + 1;
     }
-    printf("another %i", another);
+    if (another == 10) {
+        if (another < 20) {
+            if (another < 15) {
+                if (another < 13) {
+                    printf("another: %i", another);
+                }
+            }
+        }
+    }
     )";
 
     Parser p;
