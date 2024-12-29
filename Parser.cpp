@@ -30,6 +30,29 @@ namespace {
     bool haswhitespace(const std::string_view view) {
         return std::any_of(view.begin(), view.end(), [] (auto c) { return std::isspace(c); });
     }
+
+    size_t find_block_end(std::string_view input) {
+        if (input[0] != '{') {
+            throw std::runtime_error("unexpected starting condition");
+        }
+
+        size_t index = 0;
+        size_t requiredCurls = 0;
+        for (auto c : input) {
+            if (c == '{') {
+                requiredCurls++;
+            } else if (c == '}') {
+                requiredCurls--;
+            }
+
+            if (requiredCurls == 0) {
+                return index;
+            }
+            index++;
+        }
+
+        return std::string_view::npos;
+    }
 }
 
 Parser::Parser()
@@ -239,8 +262,9 @@ IfChainStatementPtr Parser::parse_if_chain(std::string_view& input) {
             ifStatement->comparator = IfStatement::None;
         }
 
+        trim_left(input);
         auto blockStart = input.find_first_of('{');
-        auto blockEnd = input.find_first_of('}');
+        auto blockEnd = find_block_end(input);
         if (blockStart == std::string_view::npos || blockEnd == std::string_view::npos) {
             throw std::runtime_error("couldn't find block delimiters");
         }
@@ -278,8 +302,9 @@ LoopStatementPtr Parser::parse_loop(std::string_view& input) {
     }
     auto ifStatement = std::move(ifStatementExpected.value());
 
+    trim_left(input);
     auto blockStart = input.find_first_of('{');
-    auto blockEnd = input.find_first_of('}');
+    auto blockEnd = find_block_end(input);
     if (blockStart == std::string_view::npos || blockEnd == std::string_view::npos) {
         throw std::runtime_error("couldn't find block delimiters");
     }
