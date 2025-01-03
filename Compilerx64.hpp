@@ -12,12 +12,18 @@
 
 class Compiler_x64 {
 
+public:
+    enum class Mode {
+        JIT
+    };
+
 private:
     Block* _block = nullptr;
     InstrBufferx64* _buff = nullptr;
+    Mode _mode = Mode::JIT;
 
 public:
-    Compiler_x64(Block* block, InstrBufferx64* buff);
+    Compiler_x64(Block* block, InstrBufferx64* buff, Mode mode = Mode::JIT);
 
     void compile_function();
     void compile_block();

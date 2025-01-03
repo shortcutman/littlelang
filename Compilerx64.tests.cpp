@@ -32,8 +32,8 @@ TEST(Compilerx64Tests, compile_function_call_with_intparam) {
     EXPECT_EQ(
         buffer.buffer(),
         std::vector<uint8_t>({
-            0x48, 0xb8, putsaddrchr[0], putsaddrchr[1], putsaddrchr[2], putsaddrchr[3], putsaddrchr[4], putsaddrchr[5], putsaddrchr[6], putsaddrchr[7], //mov rax, imm64
             0x48, 0xbf, 0xbb, 0xaa, 0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, //mov rdi, imm64
+            0x48, 0xb8, putsaddrchr[0], putsaddrchr[1], putsaddrchr[2], putsaddrchr[3], putsaddrchr[4], putsaddrchr[5], putsaddrchr[6], putsaddrchr[7], //mov rax, imm64
             0xff, 0xd0 //call rax
         }));
 }
@@ -59,12 +59,12 @@ TEST(Compilerx64Tests, compile_function_call_with_stringparam) {
     uint8_t* straddrchr = reinterpret_cast<uint8_t*>(&pointer);
 
     std::vector<uint8_t> expected;
-    //mov rax, imm64
-    expected.insert(expected.end(), {0x48, 0xb8});
-    expected.insert(expected.end(), putsaddrchr, putsaddrchr + 8);
     //mov rdi, imm64
     expected.insert(expected.end(), {0x48, 0xbf});
     expected.insert(expected.end(), straddrchr, straddrchr + 8);
+    //mov rax, imm64
+    expected.insert(expected.end(), {0x48, 0xb8});
+    expected.insert(expected.end(), putsaddrchr, putsaddrchr + 8);
     //call rax
     expected.insert(expected.end(), {0xff, 0xd0});
 
@@ -98,9 +98,9 @@ TEST(Compilerx64Tests, compile_multi_args) {
     EXPECT_EQ(
         buffer.buffer(),
         std::vector<uint8_t>({
-            0x48, 0xb8, putsaddrchr[0], putsaddrchr[1], putsaddrchr[2], putsaddrchr[3], putsaddrchr[4], putsaddrchr[5], putsaddrchr[6], putsaddrchr[7], //mov rax, imm64
             0x48, 0xbf, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //mov rdi, imm64
             0x48, 0xbe, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //mov rdi, imm64
+            0x48, 0xb8, putsaddrchr[0], putsaddrchr[1], putsaddrchr[2], putsaddrchr[3], putsaddrchr[4], putsaddrchr[5], putsaddrchr[6], putsaddrchr[7], //mov rax, imm64
             0xff, 0xd0 //call rax
         }));
 }
