@@ -44,7 +44,6 @@ TEST(Compilerx64Tests, compile_function_call_with_stringparam) {
 
     auto stringparam = std::make_unique<StringParam>();
     stringparam->content = "string";
-    uint8_t* pointer = reinterpret_cast<uint8_t*>(const_cast<char*>(stringparam->content.c_str()));
     call.params.push_back(std::move(stringparam));
 
     Block block;
@@ -56,12 +55,13 @@ TEST(Compilerx64Tests, compile_function_call_with_stringparam) {
     void* putsaddr = dlsym(dlHandle, "puts");
 
     uint8_t* putsaddrchr = reinterpret_cast<uint8_t*>(&putsaddr);
-    uint8_t* straddrchr = reinterpret_cast<uint8_t*>(&pointer);
+    uint8_t* straddrchr = reinterpret_cast<uint8_t*>(const_cast<char*>(buffer._cstrings.back()->string.c_str()));
+    uint8_t* straddr = reinterpret_cast<uint8_t*>(&straddrchr);
 
     std::vector<uint8_t> expected;
     //mov rdi, imm64
     expected.insert(expected.end(), {0x48, 0xbf});
-    expected.insert(expected.end(), straddrchr, straddrchr + 8);
+    expected.insert(expected.end(), straddr, straddr + 8);
     //mov rax, imm64
     expected.insert(expected.end(), {0x48, 0xb8});
     expected.insert(expected.end(), putsaddrchr, putsaddrchr + 8);

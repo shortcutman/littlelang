@@ -186,7 +186,8 @@ void Compiler_x64::compile_parameter_to_register(Param* param, InstrBufferx64::R
 
     auto string = dynamic_cast<StringParam*>(param);
     if (string) {
-        _buff->mov_r64_imm64(dest, reinterpret_cast<uint64_t>(const_cast<char*>(string->content.c_str())));
+        auto cstrAddr = _buff->add_cstring(string->content, _buff->buffer().size() + 2);
+        _buff->mov_r64_imm64(dest, cstrAddr);
         return;
     }
 

@@ -26,6 +26,13 @@ public:
         size_t location;
     };
 
+    struct CString {
+        std::string string;
+        size_t location;
+        auto operator<=>(const CString&) const = default;
+    };
+    std::vector<std::unique_ptr<CString>> _cstrings;
+
 private:
     std::vector<std::uint8_t> _buffer;
     std::vector<std::unique_ptr<JmpUpdate>> _updates;
@@ -35,6 +42,8 @@ public:
 
     void execute();
     const std::vector<std::uint8_t>& buffer() const;
+
+    uint64_t add_cstring(const std::string& str, size_t location);
 
     void mov_r64_r64(Register dest, Register src);
     void mov_r64_imm64(Register dest, std::uint64_t input);

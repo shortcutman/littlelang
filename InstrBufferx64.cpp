@@ -27,6 +27,14 @@ const std::vector<uint8_t>& InstrBufferx64::buffer() const {
     return _buffer;
 }
 
+uint64_t InstrBufferx64::add_cstring(const std::string& str, size_t location) {
+    _cstrings.push_back(std::make_unique<InstrBufferx64::CString>(InstrBufferx64::CString{
+        .string = str,
+        .location = location
+    }));
+    return reinterpret_cast<uint64_t>(const_cast<char*>(_cstrings.back()->string.c_str()));
+}
+
 void InstrBufferx64::mov_r64_imm64(Register dest, std::uint64_t input) {
     push_rexw();
     push_byte(0xb8 + (static_cast<int>(dest) & 0x07));
@@ -173,11 +181,18 @@ void InstrBufferx64::append_buffer(InstrBufferx64& buffer) {
         this->_updates.push_back(std::move(update));
         auto& adjust = this->_updates.back();
         adjust->owner = this;
-        adjust->location = adjust->location + currentSize;
+        adjust->location += currentSize;
     }
 
-    buffer._buffer = std::vector<uint8_t>();
-    buffer._updates = std::vector<std::unique_ptr<JmpUpdate>>();
+    for (auto& cstrptr : buffer._cstrings) {
+        this->_cstrings.push_back(std::move(cstrptr));
+        auto& cstr = *this->_cstrings.back();
+        cstr.location += currentSize;
+    }
+
+    buffer._buffer.clear();
+    buffer._updates.clear();
+    buffer._cstrings.clear();
 }
 
 void InstrBufferx64::push_rexw() {

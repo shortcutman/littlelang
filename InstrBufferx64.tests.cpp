@@ -193,3 +193,20 @@ TEST(InstrBufferx64, add_r64_r64) {
         b.buffer(),
         std::vector<uint8_t>({0x48, 0x03, 0xc1}));
 }
+
+TEST(InstrBufferx64, add_cstring) {
+    InstrBufferx64 b;
+    auto stringAddressAsUint64 = b.add_cstring(std::string("test"), 2);
+    EXPECT_EQ(
+        *b._cstrings.back(),
+        (InstrBufferx64::CString{
+            .string = "test",
+            .location = 2
+        }));
+
+    EXPECT_EQ(
+        stringAddressAsUint64,
+        reinterpret_cast<uint64_t>(const_cast<char*>(b._cstrings.back()->string.c_str()))
+    );
+}
+
