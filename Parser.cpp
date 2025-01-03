@@ -7,7 +7,6 @@
 #include "Parser.hpp"
 
 #include <algorithm>
-#include <dlfcn.h>
 
 namespace {
     void trim_left(std::string_view& view) {
@@ -117,12 +116,6 @@ FunctionCallPtr Parser::parse_function_call(std::string_view input) {
     call->functionName = name;
     input.remove_prefix(nameEnd + 1);
 
-    void* dlHandle = dlopen(0, RTLD_NOW);
-    void* function = dlsym(dlHandle, call->functionName.c_str());
-    if (!function) {
-        throw std::runtime_error("Unknown function name.");
-    }
-    call->functionAddr = function;
 
     auto tokenEnd = input.find_first_of(",)");
     while (tokenEnd != std::string_view::npos) {

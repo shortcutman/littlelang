@@ -61,7 +61,6 @@ struct FunctionCall : public Statement {
     virtual ~FunctionCall() = default;
 
     std::string functionName;
-    void* functionAddr;
     std::vector<std::unique_ptr<Param>> params;
 };
 typedef std::unique_ptr<FunctionCall> FunctionCallPtr;

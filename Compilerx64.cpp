@@ -8,6 +8,7 @@
 #include "Parser.hpp"
 #include "InstrBufferx64.hpp"
 
+#include <dlfcn.h>
 #include <expected>
 #include <map>
 #include <ranges>
@@ -67,9 +68,15 @@ void Compiler_x64::compile_block() {
 }
 
 void Compiler_x64::compile_function_call(const FunctionCall& call) {
+    void* dlHandle = dlopen(0, RTLD_NOW);
+    void* functionAddr = dlsym(dlHandle, call.functionName.c_str());
+    if (!functionAddr) {
+        throw std::runtime_error("Unknown function name.");
+    }
+
     _buff->mov_r64_imm64(
         InstrBufferx64::Register::RAX,
-        reinterpret_cast<uint64_t>(call.functionAddr));
+        reinterpret_cast<uint64_t>(functionAddr));
 
     std::map<size_t, InstrBufferx64::Register> index_to_register({
         {0, InstrBufferx64::Register::RDI},

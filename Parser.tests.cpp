@@ -5,7 +5,6 @@
 
 #include "Parser.hpp"
 
-#include <dlfcn.h>
 #include <gtest/gtest.h>
 
 TEST(Parser, parse_function_call) {
@@ -13,11 +12,6 @@ TEST(Parser, parse_function_call) {
     Parser p;
     auto call = p.parse_function_call(eg);
     EXPECT_EQ(call->functionName, "puts");
-
-    void* dlHandle = dlopen(0, RTLD_NOW);
-    void* putsaddr = dlsym(dlHandle, "puts");
-
-    EXPECT_EQ(call->functionAddr, putsaddr);
 
     auto stringparam = dynamic_cast<StringParam*>(call->params[0].get());
     ASSERT_NE(stringparam, nullptr);
@@ -29,11 +23,6 @@ TEST(Parser, printf_two_args) {
     Parser p;
     auto call = p.parse_function_call(eg);
     EXPECT_EQ(call->functionName, "printf");
-
-    void* dlHandle = dlopen(0, RTLD_NOW);
-    void* printfaddr = dlsym(dlHandle, "printf");
-
-    EXPECT_EQ(call->functionAddr, printfaddr);
 
     EXPECT_EQ(call->params.size(), 2);
 
@@ -51,10 +40,6 @@ TEST(Parser, parse_function_call_stack_argument) {
     Parser p;
     auto call = p.parse_function_call(eg);
     EXPECT_EQ(call->functionName, "printf");
-
-    void* dlHandle = dlopen(0, RTLD_NOW);
-    void* printfaddr = dlsym(dlHandle, "printf");
-    EXPECT_EQ(call->functionAddr, printfaddr);
 
     EXPECT_EQ(call->params.size(), 2);
 

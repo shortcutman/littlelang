@@ -8,13 +8,13 @@
 #include "InstrBufferx64.hpp"
 #include "Parser.hpp"
 
+#include <dlfcn.h>
 #include <expected>
 #include <gtest/gtest.h>
 
 TEST(Compilerx64Tests, compile_function_call_with_intparam) {
     FunctionCall call;
-    call.functionName = "testFunc";
-    call.functionAddr = reinterpret_cast<void*>(0x1122334455667788);
+    call.functionName = "puts";
 
     auto intparam = std::make_unique<Int64Param>();
     intparam->content = 0xaabbccddeeffaabb;
@@ -25,10 +25,14 @@ TEST(Compilerx64Tests, compile_function_call_with_intparam) {
     auto compiler = Compiler_x64(&block, &buffer);
     compiler.compile_function_call(call);
 
+    void* dlHandle = dlopen(0, RTLD_NOW);
+    void* putsaddr = dlsym(dlHandle, "puts");
+    uint8_t* putsaddrchr = reinterpret_cast<uint8_t*>(&putsaddr);
+
     EXPECT_EQ(
         buffer.buffer(),
         std::vector<uint8_t>({
-            0x48, 0xb8, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, //mov rax, imm64
+            0x48, 0xb8, putsaddrchr[0], putsaddrchr[1], putsaddrchr[2], putsaddrchr[3], putsaddrchr[4], putsaddrchr[5], putsaddrchr[6], putsaddrchr[7], //mov rax, imm64
             0x48, 0xbf, 0xbb, 0xaa, 0xff, 0xee, 0xdd, 0xcc, 0xbb, 0xaa, //mov rdi, imm64
             0xff, 0xd0 //call rax
         }));
@@ -36,8 +40,7 @@ TEST(Compilerx64Tests, compile_function_call_with_intparam) {
 
 TEST(Compilerx64Tests, compile_function_call_with_stringparam) {
     FunctionCall call;
-    call.functionName = "testFunc";
-    call.functionAddr = reinterpret_cast<void*>(0x1122334455667788);
+    call.functionName = "puts";
 
     auto stringparam = std::make_unique<StringParam>();
     stringparam->content = "string";
@@ -49,12 +52,19 @@ TEST(Compilerx64Tests, compile_function_call_with_stringparam) {
     auto compiler = Compiler_x64(&block, &buffer);
     compiler.compile_function_call(call);
 
+    void* dlHandle = dlopen(0, RTLD_NOW);
+    void* putsaddr = dlsym(dlHandle, "puts");
+
+    uint8_t* putsaddrchr = reinterpret_cast<uint8_t*>(&putsaddr);
+    uint8_t* straddrchr = reinterpret_cast<uint8_t*>(&pointer);
+
     std::vector<uint8_t> expected;
     //mov rax, imm64
-    expected.insert(expected.end(), {0x48, 0xb8, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11});
+    expected.insert(expected.end(), {0x48, 0xb8});
+    expected.insert(expected.end(), putsaddrchr, putsaddrchr + 8);
     //mov rdi, imm64
-    expected.insert(expected.end(), {0x48, 0xbf, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11});
-    std::memcpy(&expected[12], &pointer, 8);
+    expected.insert(expected.end(), {0x48, 0xbf});
+    expected.insert(expected.end(), straddrchr, straddrchr + 8);
     //call rax
     expected.insert(expected.end(), {0xff, 0xd0});
 
@@ -65,8 +75,7 @@ TEST(Compilerx64Tests, compile_function_call_with_stringparam) {
 
 TEST(Compilerx64Tests, compile_multi_args) {
     FunctionCall call;
-    call.functionName = "testFunc";
-    call.functionAddr = reinterpret_cast<void*>(0x1122334455667788);
+    call.functionName = "puts";
 
     auto intparam1 = std::make_unique<Int64Param>();
     intparam1->content = 1234;
@@ -81,10 +90,15 @@ TEST(Compilerx64Tests, compile_multi_args) {
     auto compiler = Compiler_x64(&block, &buffer);
     compiler.compile_function_call(call);
 
+    void* dlHandle = dlopen(0, RTLD_NOW);
+    void* putsaddr = dlsym(dlHandle, "puts");
+
+    uint8_t* putsaddrchr = reinterpret_cast<uint8_t*>(&putsaddr);
+
     EXPECT_EQ(
         buffer.buffer(),
         std::vector<uint8_t>({
-            0x48, 0xb8, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, //mov rax, imm64
+            0x48, 0xb8, putsaddrchr[0], putsaddrchr[1], putsaddrchr[2], putsaddrchr[3], putsaddrchr[4], putsaddrchr[5], putsaddrchr[6], putsaddrchr[7], //mov rax, imm64
             0x48, 0xbf, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //mov rdi, imm64
             0x48, 0xbe, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //mov rdi, imm64
             0xff, 0xd0 //call rax
