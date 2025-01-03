@@ -14,8 +14,16 @@ class Compiler_x64 {
 
 public:
     enum class Mode {
-        JIT
+        JIT,
+        ObjectFile
     };
+
+    struct ExternFunction {
+        std::string symbol;
+        size_t location;
+        auto operator<=>(const ExternFunction&) const = default;
+    };
+    std::vector<ExternFunction> _externFuncs;
 
 private:
     Block* _block = nullptr;

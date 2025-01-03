@@ -59,6 +59,7 @@ public:
     void append_buffer(InstrBufferx64& buffer);
     
     void call_r64(Register dest);
+    void call_rel32(int32_t op);
     void ret();
 
     void push(Register src);

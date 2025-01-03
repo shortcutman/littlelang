@@ -28,6 +28,7 @@ enable_testing()
 add_executable(
     ll_tests
     Compilerx64.cpp
+    Compilerx64.obj.tests.cpp
     Compilerx64.tests.cpp
     InstrBufferx64.cpp
     InstrBufferx64.tests.cpp
