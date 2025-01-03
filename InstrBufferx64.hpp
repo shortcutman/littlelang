@@ -33,6 +33,13 @@ public:
     };
     std::vector<std::unique_ptr<CString>> _cstrings;
 
+    struct ExternFunction {
+        std::string symbol;
+        size_t location;
+        auto operator<=>(const ExternFunction&) const = default;
+    };
+    std::vector<ExternFunction> _externFuncs;
+
 private:
     std::vector<std::uint8_t> _buffer;
     std::vector<std::unique_ptr<JmpUpdate>> _updates;

@@ -18,13 +18,6 @@ public:
         ObjectFile
     };
 
-    struct ExternFunction {
-        std::string symbol;
-        size_t location;
-        auto operator<=>(const ExternFunction&) const = default;
-    };
-    std::vector<ExternFunction> _externFuncs;
-
 private:
     Block* _block = nullptr;
     InstrBufferx64* _buff = nullptr;

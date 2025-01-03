@@ -98,7 +98,7 @@ void Compiler_x64::compile_function_call(const FunctionCall& call) {
         _buff->call_r64(InstrBufferx64::Register::RAX);
     } else if (_mode == Mode::ObjectFile) {
         _buff->call_rel32(0);
-        _externFuncs.push_back({
+        _buff->_externFuncs.push_back({
             .symbol = call.functionName,
             .location = _buff->buffer().size() - sizeof(int32_t)
         });

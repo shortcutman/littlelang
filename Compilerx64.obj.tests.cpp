@@ -23,8 +23,8 @@ TEST(Compilerx64ObjectTests, compile_function_call) {
         }));
 
     EXPECT_EQ(
-        compiler._externFuncs.front(),
-        (Compiler_x64::ExternFunction{
+        buffer._externFuncs.front(),
+        (InstrBufferx64::ExternFunction{
             .symbol = "puts",
             .location = 1
         })
@@ -52,8 +52,8 @@ TEST(Compilerx64ObjectTests, compile_function_call_intparam) {
         }));
 
     EXPECT_EQ(
-        compiler._externFuncs.front(),
-        (Compiler_x64::ExternFunction{
+        buffer._externFuncs.front(),
+        (InstrBufferx64::ExternFunction{
             .symbol = "puts",
             .location = 11
         })
