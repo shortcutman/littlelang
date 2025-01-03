@@ -26,14 +26,21 @@ public:
         size_t location;
     };
 
+    struct ExternLinkage {
+        std::string symbolname;
+        size_t location;
+    };
+
 private:
     std::vector<std::uint8_t> _buffer;
     std::vector<std::unique_ptr<JmpUpdate>> _updates;
+    std::vector<ExternLinkage> _linkage;
 
 public:
     InstrBufferx64() {}
 
     void execute();
+    void writeout(std::ostream& out);
     const std::vector<std::uint8_t>& buffer() const;
 
     void mov_r64_r64(Register dest, Register src);
@@ -58,6 +65,7 @@ public:
 
     void append_buffer(InstrBufferx64& buffer);
     
+    void call_extern(std::string name);
     void call_r64(Register dest);
     void ret();
 

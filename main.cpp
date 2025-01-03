@@ -9,6 +9,7 @@
 #include <vector>
 #include <stdio.h>
 #include <dlfcn.h>
+#include <fstream>
 
 void anotherfunction() {
     const char* ant = "hello";
@@ -202,6 +203,26 @@ void fizzbuzz() {
     i.execute();
 }
 
+void macho() {
+    std::string eg = R"(
+        puts("Hello World!");
+    )";
+
+    Parser p;
+    p.parse_block(eg);
+    InstrBufferx64 i;
+    auto compiler = Compiler_x64(p.block.get(), &i);
+    compiler.compile_function();
+
+    std::fstream f("/Users/daniel/Projects.nosync/littlelang/build/out.o", f.binary | f.out);
+    if (!f.is_open()) {
+        throw std::runtime_error("didn't open");
+    }
+
+    i.writeout(f);
+    f.close();
+}
+
 int main() {
     // anotherfunction();
     // func2();
@@ -212,6 +233,7 @@ int main() {
     // func7();
     // func8();
     // func9();
-    fizzbuzz();
+    // fizzbuzz();
+    macho();
     return 0;
 }

@@ -5,6 +5,9 @@
 
 #include "InstrBufferx64.hpp"
 
+#include "MachO.hpp"
+
+#include <ostream>
 #include <sys/mman.h>
 
 void InstrBufferx64::execute() {
@@ -21,6 +24,10 @@ void InstrBufferx64::execute() {
     memset(exememory, 0, _buffer.size());
     memcpy(exememory, &_buffer[0], _buffer.size());
     reinterpret_cast<void(*)(void)>(exememory)();
+}
+
+void InstrBufferx64::writeout(std::ostream& out) {
+    macho::write(out, _buffer);
 }
 
 const std::vector<uint8_t>& InstrBufferx64::buffer() const {
@@ -61,6 +68,14 @@ void InstrBufferx64::mov_r64_stack(Register dest, std::int8_t adjust) {
 void InstrBufferx64::call_r64(Register dest) {
     push_byte(0xff);
     push_modrm(3, 2, static_cast<int>(dest) & 0x07);
+}
+
+void InstrBufferx64::call_extern(std::string name) {
+    push_byte(0xe8);
+
+    _linkage.push_back({name, _buffer.size()});
+
+    push_dword(0x00);
 }
 
 void InstrBufferx64::add_r64_imm32(Register dest, std::int32_t value) {

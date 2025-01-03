@@ -67,9 +67,9 @@ void Compiler_x64::compile_block() {
 }
 
 void Compiler_x64::compile_function_call(const FunctionCall& call) {
-    _buff->mov_r64_imm64(
-        InstrBufferx64::Register::RAX,
-        reinterpret_cast<uint64_t>(call.functionAddr));
+    // _buff->mov_r64_imm64(
+    //     InstrBufferx64::Register::RAX,
+    //     reinterpret_cast<uint64_t>(call.functionAddr));
 
     std::map<size_t, InstrBufferx64::Register> index_to_register({
         {0, InstrBufferx64::Register::RDI},
@@ -86,7 +86,8 @@ void Compiler_x64::compile_function_call(const FunctionCall& call) {
         compile_parameter_to_register(call.params[i].get(), index_to_register[i]);
     }
 
-    _buff->call_r64(InstrBufferx64::Register::RAX);
+    // _buff->call_r64(InstrBufferx64::Register::RAX);
+    _buff->call_extern(call.functionName);
 }
 
 void Compiler_x64::compile_block_prefix() {
