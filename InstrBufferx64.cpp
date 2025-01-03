@@ -190,9 +190,16 @@ void InstrBufferx64::append_buffer(InstrBufferx64& buffer) {
         cstr.location += currentSize;
     }
 
+    for (auto& externFunc : buffer._externFuncs) {
+        this->_externFuncs.push_back(externFunc); 
+        auto& adjust = this->_externFuncs.back();
+        adjust.location += currentSize;
+    }
+
     buffer._buffer.clear();
     buffer._updates.clear();
     buffer._cstrings.clear();
+    buffer._externFuncs.clear();
 }
 
 void InstrBufferx64::push_rexw() {
