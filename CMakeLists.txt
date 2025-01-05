@@ -11,6 +11,7 @@ add_executable(LittleLang
     main.cpp
     Compilerx64.cpp
     InstrBufferx64.cpp
+    MachO.cpp
     Parser.cpp
 )
 target_compile_options(LittleLang PRIVATE -masm=intel)
@@ -32,6 +33,8 @@ add_executable(
     Compilerx64.tests.cpp
     InstrBufferx64.cpp
     InstrBufferx64.tests.cpp
+    MachO.cpp
+    MachO.tests.cpp
     Parser.cpp
     ParsedBlock.tests.cpp
     Parser.tests.cpp
