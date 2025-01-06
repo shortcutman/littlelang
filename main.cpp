@@ -1,9 +1,11 @@
 
 #include "Compilerx64.hpp"
 #include "InstrBufferx64.hpp"
+#include "MachO.hpp"
 #include "Parser.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <sys/mman.h>
 #include <string.h>
 #include <vector>
@@ -202,6 +204,26 @@ void fizzbuzz() {
     i.execute();
 }
 
+void test_macho() {
+    std::string eg = R"(
+    puts("test");
+    )";
+
+    Parser p;
+    p.parse_block(eg);
+    InstrBufferx64 i;
+    auto compiler = Compiler_x64(p.block.get(), &i, Compiler_x64::Mode::ObjectFile);
+    compiler.compile_function();
+    
+    std::fstream f("/Users/daniel/Projects.nosync/littlelang/build/out.o", f.binary | f.out);
+    if (!f.is_open()) {
+        throw std::runtime_error("couldn't open");
+    }
+
+    macho::write(f, i);
+    f.close();
+}
+
 int main() {
     // anotherfunction();
     // func2();
@@ -212,6 +234,7 @@ int main() {
     // func7();
     // func8();
     // func9();
-    fizzbuzz();
+    // fizzbuzz();
+    test_macho();
     return 0;
 }
