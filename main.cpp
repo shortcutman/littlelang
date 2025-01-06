@@ -170,8 +170,28 @@ void func9() {
     i.execute();
 }
 
-void fizzbuzz() {
+void test_macho() {
     std::string eg = R"(
+    puts("test");
+    )";
+
+    Parser p;
+    p.parse_block(eg);
+    InstrBufferx64 i;
+    auto compiler = Compiler_x64(p.block.get(), &i, Compiler_x64::Mode::ObjectFile);
+    compiler.compile_function();
+    
+    std::fstream f("./out.o", f.binary | f.out);
+    if (!f.is_open()) {
+        throw std::runtime_error("couldn't open");
+    }
+
+    macho::write(f, i);
+    f.close();
+}
+
+namespace {
+    const std::string fizzbuzz_program = R"(
     int64 counter;
     counter = 1;
     while (counter < 100) {
@@ -195,27 +215,25 @@ void fizzbuzz() {
         puts("");
     }
     )";
+}
 
+void fizzbuzz_jit() {
     Parser p;
-    p.parse_block(eg);
+    p.parse_block(fizzbuzz_program);
     InstrBufferx64 i;
-    auto compiler = Compiler_x64(p.block.get(), &i);
+    auto compiler = Compiler_x64(p.block.get(), &i, Compiler_x64::Mode::JIT);
     compiler.compile_function();
     i.execute();
 }
 
-void test_macho() {
-    std::string eg = R"(
-    puts("test");
-    )";
-
+void fizzbuzz_bin() {
     Parser p;
-    p.parse_block(eg);
+    p.parse_block(fizzbuzz_program);
     InstrBufferx64 i;
     auto compiler = Compiler_x64(p.block.get(), &i, Compiler_x64::Mode::ObjectFile);
     compiler.compile_function();
-    
-    std::fstream f("/Users/daniel/Projects.nosync/littlelang/build/out.o", f.binary | f.out);
+
+    std::fstream f("./out.o", f.binary | f.out);
     if (!f.is_open()) {
         throw std::runtime_error("couldn't open");
     }
@@ -223,6 +241,7 @@ void test_macho() {
     macho::write(f, i);
     f.close();
 }
+
 
 int main() {
     // anotherfunction();
@@ -234,7 +253,8 @@ int main() {
     // func7();
     // func8();
     // func9();
-    // fizzbuzz();
-    test_macho();
+    // test_macho();
+    fizzbuzz_jit();
+    fizzbuzz_bin();
     return 0;
 }
