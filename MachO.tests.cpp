@@ -17,6 +17,15 @@ namespace {
             reinterpret_cast<const uint8_t*>(against)
         );
     }
+
+    template<typename T>
+    bool compare_data_to(uint8_t* start, T against) {
+        return std::equal(
+            start,
+            start + sizeof(T),
+            reinterpret_cast<uint8_t*>(&against)
+        );
+    }
 }
 
 TEST(MachOTests, symbol_table_only_main) {
@@ -129,4 +138,128 @@ TEST(MachOTests, cstrings_three) {
     EXPECT_EQ(cstrings._string_to_offset["test"], 0);
     EXPECT_EQ(cstrings._string_to_offset["another"], 5);
     EXPECT_EQ(cstrings._string_to_offset["what"], 13);
+}
+
+TEST(MachOTests, relocations_none) {
+    InstrBufferx64 buffer;
+
+    std::vector<uint8_t> bufferCopy = buffer.buffer();
+    auto relocs = macho::create_reloc_data(buffer, bufferCopy, macho::CStringData(), macho::SymbolData());
+    EXPECT_TRUE(bufferCopy.empty());
+    EXPECT_TRUE(relocs.empty());
+}
+
+TEST(MachOTests, relocations_cstring_one) {
+    InstrBufferx64 buffer;
+    buffer.add_cstring("test", 2);
+    buffer.mov_r64_imm64(InstrBufferx64::Register::RAX, 0); // on heap
+
+    auto cstrings = macho::CStringData::generate(buffer);
+    EXPECT_EQ(cstrings._data.size(), 5);
+    EXPECT_TRUE(compare_data_to_cstr(&cstrings._data[0], 4, "test"));
+    EXPECT_EQ(cstrings._string_to_offset.size(), 1);
+    EXPECT_EQ(cstrings._string_to_offset["test"], 0);
+
+    std::vector<uint8_t> bufferCopy = buffer.buffer();
+    auto relocs = macho::create_reloc_data(buffer, bufferCopy, cstrings, macho::SymbolData());
+    EXPECT_TRUE(compare_data_to<uint64_t>(&bufferCopy[2], bufferCopy.size()));
+    EXPECT_TRUE(compare_data_to<int32_t>(&relocs[0], 2));
+    EXPECT_TRUE(compare_data_to<uint32_t>(&relocs[4], 0x06000002));
+}
+
+TEST(MachOTests, relocations_cstring_three) {
+    InstrBufferx64 buffer;
+    buffer.add_cstring("test", 2);
+    buffer.mov_r64_imm64(InstrBufferx64::Register::RAX, 0);
+    buffer.add_cstring("another", 12);
+    buffer.mov_r64_imm64(InstrBufferx64::Register::RAX, 0);
+    buffer.add_cstring("what", 22);
+    buffer.mov_r64_imm64(InstrBufferx64::Register::RAX, 0);
+
+    auto cstrings = macho::CStringData::generate(buffer);
+    EXPECT_EQ(cstrings._data.size(), 18);
+    EXPECT_EQ(cstrings._string_to_offset.size(), 3);
+    EXPECT_EQ(cstrings._string_to_offset["test"], 0);
+    EXPECT_EQ(cstrings._string_to_offset["another"], 5);
+    EXPECT_EQ(cstrings._string_to_offset["what"], 13);
+
+    std::vector<uint8_t> bufferCopy = buffer.buffer();
+    auto relocs = macho::create_reloc_data(buffer, bufferCopy, cstrings, macho::SymbolData());
+    EXPECT_TRUE(compare_data_to<uint64_t>(&bufferCopy[2], bufferCopy.size() + 0));
+    EXPECT_TRUE(compare_data_to<int32_t>(&relocs[0], 2));
+    EXPECT_TRUE(compare_data_to<uint32_t>(&relocs[4], 0x06000002));
+
+    EXPECT_TRUE(compare_data_to<uint64_t>(&bufferCopy[12], bufferCopy.size() + 5));
+    EXPECT_TRUE(compare_data_to<int32_t>(&relocs[8], 12));
+    EXPECT_TRUE(compare_data_to<uint32_t>(&relocs[12], 0x06000002));
+
+    EXPECT_TRUE(compare_data_to<uint64_t>(&bufferCopy[22], bufferCopy.size() + 13));
+    EXPECT_TRUE(compare_data_to<int32_t>(&relocs[16], 22));
+    EXPECT_TRUE(compare_data_to<uint32_t>(&relocs[20], 0x06000002));
+}
+
+
+TEST(MachOTests, relocations_externs_one) {
+    InstrBufferx64 buffer;
+    buffer._externFuncs.push_back({
+        .symbol = "puts",
+        .location = 0
+    });
+    auto symbols = macho::SymbolData::generate(buffer);
+
+    std::vector<uint8_t> bufferCopy = buffer.buffer();
+    auto relocs = macho::create_reloc_data(buffer, bufferCopy, macho::CStringData(), symbols);
+    EXPECT_TRUE(bufferCopy.empty());
+    EXPECT_TRUE(compare_data_to<int32_t>(&relocs[0], 0));
+    EXPECT_TRUE(compare_data_to<uint32_t>(&relocs[4], 0x2d000001));
+}
+
+TEST(MachOTests, relocations_externs_three) {
+    InstrBufferx64 buffer;
+    buffer._externFuncs.push_back({
+        .symbol = "puts",
+        .location = 0
+    });
+    buffer._externFuncs.push_back({
+        .symbol = "printf",
+        .location = 10
+    });
+    buffer._externFuncs.push_back({
+        .symbol = "itoa",
+        .location = 20
+    });
+    auto symbols = macho::SymbolData::generate(buffer);
+
+    std::vector<uint8_t> bufferCopy = buffer.buffer();
+    auto relocs = macho::create_reloc_data(buffer, bufferCopy, macho::CStringData(), symbols);
+    EXPECT_TRUE(bufferCopy.empty());
+
+    EXPECT_TRUE(compare_data_to<int32_t>(&relocs[0], 0));
+    EXPECT_TRUE(compare_data_to<uint32_t>(&relocs[4], 0x2d000001));
+
+    EXPECT_TRUE(compare_data_to<int32_t>(&relocs[8], 10));
+    EXPECT_TRUE(compare_data_to<uint32_t>(&relocs[12], 0x2d000002));
+
+    EXPECT_TRUE(compare_data_to<int32_t>(&relocs[16], 20));
+    EXPECT_TRUE(compare_data_to<uint32_t>(&relocs[20], 0x2d000003));
+}
+
+TEST(MachOTests, relocations_combined_one_each) {
+    InstrBufferx64 buffer;
+    buffer.add_cstring("test", 2);
+    buffer.mov_r64_imm64(InstrBufferx64::Register::RAX, 0); // on heap
+    buffer._externFuncs.push_back({
+        .symbol = "puts",
+        .location = 10
+    });
+    auto cstrings = macho::CStringData::generate(buffer);
+    auto symbols = macho::SymbolData::generate(buffer);
+
+    std::vector<uint8_t> bufferCopy = buffer.buffer();
+    auto relocs = macho::create_reloc_data(buffer, bufferCopy, cstrings, symbols);
+    EXPECT_TRUE(compare_data_to<uint64_t>(&bufferCopy[2], bufferCopy.size()));
+    EXPECT_TRUE(compare_data_to<int32_t>(&relocs[0], 2));
+    EXPECT_TRUE(compare_data_to<uint32_t>(&relocs[4], 0x06000002));
+    EXPECT_TRUE(compare_data_to<int32_t>(&relocs[8], 10));
+    EXPECT_TRUE(compare_data_to<uint32_t>(&relocs[12], 0x2d000001));
 }

@@ -72,3 +72,49 @@ macho::CStringData macho::CStringData::generate(InstrBufferx64& buff) {
 
     return data;
 }
+
+std::vector<uint8_t> macho::create_reloc_data(
+    InstrBufferx64& instrs,
+    std::vector<uint8_t>& buff,
+    const CStringData& cstrings,
+    const SymbolData& symbols) {
+    struct RelocationEntry {
+        int32_t address;
+        uint32_t flags;
+    };
+    std::vector<uint8_t> relocations;
+
+    for (auto& strReloc : instrs._cstrings) {
+        auto cstrDataOffset = cstrings._string_to_offset.find(strReloc->string);
+        if (cstrDataOffset == cstrings._string_to_offset.end()) {
+            throw std::runtime_error("Cstring missing");
+        }
+
+        //location is the address bytes for the string
+        //needs to be replaced with offset
+        uint64_t offset = cstrDataOffset->second;
+        uint64_t* replaceLocation = reinterpret_cast<uint64_t*>(&buff[strReloc->location]);
+        *replaceLocation = buff.size() + offset;
+
+        RelocationEntry reloc{
+            .address = static_cast<int32_t>(strReloc->location),
+            .flags = 0x06000002
+        };
+        bytes_to_vec(relocations, &reloc, sizeof(reloc));
+    }
+
+    for (auto& extReloc : instrs._externFuncs) {
+        auto extSym = symbols._name_to_index.find(extReloc.symbol);
+        if (extSym == symbols._name_to_index.end()) {
+            throw std::runtime_error("Extern symbol missing");
+        }
+
+        RelocationEntry reloc{
+            .address = static_cast<int32_t>(extReloc.location),
+            .flags = 0x2d000000 | (extSym->second & 0xffffff)
+        };
+        bytes_to_vec(relocations, &reloc, sizeof(reloc));
+    }
+
+    return relocations;
+}

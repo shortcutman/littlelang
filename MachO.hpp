@@ -33,4 +33,9 @@ namespace macho {
 
         static CStringData generate(InstrBufferx64& buff);
     };
+
+    std::vector<uint8_t> create_reloc_data(InstrBufferx64& instrs,
+        std::vector<uint8_t>& buff,
+        const CStringData& cstrings,
+        const SymbolData& symbols);
 };
