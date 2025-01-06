@@ -107,7 +107,7 @@ macho::CStringData macho::CStringData::generate(InstrBufferx64& buff) {
     return data;
 }
 
-std::vector<uint8_t> macho::create_reloc_data(
+macho::RelocationData macho::RelocationData::generate(
     InstrBufferx64& instrs,
     std::vector<uint8_t>& buff,
     const CStringData& cstrings,
@@ -116,7 +116,9 @@ std::vector<uint8_t> macho::create_reloc_data(
         int32_t address;
         uint32_t flags;
     };
-    std::vector<uint8_t> relocations;
+    RelocationData relocations{
+        ._count = 0
+    };
 
     for (auto& strReloc : instrs._cstrings) {
         auto cstrDataOffset = cstrings._string_to_offset.find(strReloc->string);
@@ -134,7 +136,8 @@ std::vector<uint8_t> macho::create_reloc_data(
             .address = static_cast<int32_t>(strReloc->location),
             .flags = 0x06000002
         };
-        bytes_to_vec(relocations, &reloc, sizeof(reloc));
+        bytes_to_vec(relocations._data, &reloc, sizeof(reloc));
+        relocations._count++;
     }
 
     for (auto& extReloc : instrs._externFuncs) {
@@ -147,7 +150,8 @@ std::vector<uint8_t> macho::create_reloc_data(
             .address = static_cast<int32_t>(extReloc.location),
             .flags = 0x2d000000 | (extSym->second & 0xffffff)
         };
-        bytes_to_vec(relocations, &reloc, sizeof(reloc));
+        bytes_to_vec(relocations._data, &reloc, sizeof(reloc));
+        relocations._count++;
     }
 
     return relocations;
@@ -157,7 +161,7 @@ void macho::write(std::ostream& out, InstrBufferx64& buff) {
     auto cstrings = CStringData::generate(buff);
     auto symbols = SymbolData::generate(buff);
     std::vector<uint8_t> instruction_data = buff.buffer();
-    auto relocation_data = create_reloc_data(buff, instruction_data, cstrings, symbols);
+    auto relocations = RelocationData::generate(buff, instruction_data, cstrings, symbols);
 
     macho::Header machoheader;
 
@@ -188,7 +192,7 @@ void macho::write(std::ostream& out, InstrBufferx64& buff) {
     segment_section_text.addresssize = instruction_data.size();
     segment_section_text.fileoffset = load_segment_64.fileoffset;
     segment_section_text.relocationsfileoff = load_segment_64.fileoffset + load_segment_64.filesize;
-    segment_section_text.numberofrelocations = 2;
+    segment_section_text.numberofrelocations = relocations._count;
     write_os(out, &segment_section_text, sizeof(segment_section_text));
 
     populate_text("__cstring", segment_section_cstring.sectionname);
@@ -200,7 +204,7 @@ void macho::write(std::ostream& out, InstrBufferx64& buff) {
 
     write_os(out, &build_version, sizeof(build_version));
 
-    symtab = symbols.symbol_table(load_segment_64.fileoffset + segment_section_text.addresssize + segment_section_cstring.addresssize + 16); //+16 = relocs
+    symtab = symbols.symbol_table(load_segment_64.fileoffset + segment_section_text.addresssize + segment_section_cstring.addresssize + relocations._data.size());
     write_os(out, &symtab, sizeof(symtab));
 
     dsymtab = symbols.dynamic_symbol_table();
@@ -208,6 +212,6 @@ void macho::write(std::ostream& out, InstrBufferx64& buff) {
 
     write_os(out, &instruction_data[0], instruction_data.size());
     write_os(out, &cstrings._data[0], cstrings._data.size());
-    write_os(out, &relocation_data[0], relocation_data.size());
+    write_os(out, &relocations._data[0], relocations._data.size());
     write_os(out, &symbols._data[0], symbols._data.size());
 }
