@@ -249,7 +249,7 @@ void Compiler_x64::compile_if_chain(IfChainStatement* chain) {
     for (size_t i = 0; i < chain->_ifstatements.size(); i++) {
         auto& ifStatement = chain->_ifstatements[i];
         InstrBufferx64 statementBuff;
-        Compiler_x64 statementCompiler(ifStatement->block.get(), &statementBuff);
+        Compiler_x64 statementCompiler(ifStatement->block.get(), &statementBuff, _mode);
         statementCompiler.compile_block();
         if (i != (chain->_ifstatements.size() - 1)) {
             updates.push_back(statementBuff.jmp_with_update());
@@ -275,7 +275,7 @@ void Compiler_x64::compile_loop(LoopStatement* loop) {
     size_t beforeLoopStatementSize = _buff->buffer().size();
     
     InstrBufferx64 statementBuff;
-    Compiler_x64 statementCompiler(ifStatement->block.get(), &statementBuff);
+    Compiler_x64 statementCompiler(ifStatement->block.get(), &statementBuff, _mode);
     statementCompiler.compile_block();
     update = statementBuff.jmp_with_update();
     auto blockSize = statementBuff.buffer().size();
