@@ -57,3 +57,18 @@ macho::SymbolData macho::SymbolData::generate(InstrBufferx64& buff) {
     
     return data;
 }
+
+macho::CStringData macho::CStringData::generate(InstrBufferx64& buff) {
+    CStringData data;
+
+    for (auto& cstr : buff._cstrings) {
+        if (data._string_to_offset.contains(cstr->string)) {
+            continue;
+        }
+
+        data._string_to_offset[cstr->string] = data._data.size();
+        bytes_to_vec(data._data, cstr->string.c_str(), cstr->string.size() + 1);
+    }
+
+    return data;
+}

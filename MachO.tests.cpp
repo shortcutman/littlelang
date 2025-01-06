@@ -92,3 +92,41 @@ TEST(MachOTests, symbol_table_main_and_extern_duplicated) {
     EXPECT_TRUE(compare_data_to_cstr(&symtable._data[sizeof(macho::Symbol) * 2 + 1], 6, "_main"));
     EXPECT_TRUE(compare_data_to_cstr(&symtable._data[sizeof(macho::Symbol) * 2 + 7], 5, "_puts"));
 }
+
+TEST(MachOTests, cstrings_empty) {
+    InstrBufferx64 buffer;
+    auto cstrings = macho::CStringData::generate(buffer);
+
+    EXPECT_TRUE(cstrings._data.empty());
+    EXPECT_TRUE(cstrings._string_to_offset.empty());
+}
+
+TEST(MachOTests, cstrings_one) {
+    InstrBufferx64 buffer;
+    buffer.add_cstring("test", 10);
+    auto cstrings = macho::CStringData::generate(buffer);
+
+    EXPECT_EQ(cstrings._data.size(), 5);
+    EXPECT_TRUE(compare_data_to_cstr(&cstrings._data[0], 4, "test"));
+
+    EXPECT_EQ(cstrings._string_to_offset.size(), 1);
+    EXPECT_EQ(cstrings._string_to_offset["test"], 0);
+}
+
+TEST(MachOTests, cstrings_three) {
+    InstrBufferx64 buffer;
+    buffer.add_cstring("test", 10);
+    buffer.add_cstring("another", 5);
+    buffer.add_cstring("what", 21);
+    auto cstrings = macho::CStringData::generate(buffer);
+
+    EXPECT_EQ(cstrings._data.size(), 18);
+    EXPECT_TRUE(compare_data_to_cstr(&cstrings._data[0], 4, "test"));
+    EXPECT_TRUE(compare_data_to_cstr(&cstrings._data[5], 7, "another"));
+    EXPECT_TRUE(compare_data_to_cstr(&cstrings._data[13], 4, "what"));
+
+    EXPECT_EQ(cstrings._string_to_offset.size(), 3);
+    EXPECT_EQ(cstrings._string_to_offset["test"], 0);
+    EXPECT_EQ(cstrings._string_to_offset["another"], 5);
+    EXPECT_EQ(cstrings._string_to_offset["what"], 13);
+}

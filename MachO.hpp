@@ -26,4 +26,11 @@ namespace macho {
 
         static SymbolData generate(InstrBufferx64& buff);
     };
+
+    struct CStringData {
+        std::map<std::string, uint32_t> _string_to_offset;
+        std::vector<uint8_t> _data;
+
+        static CStringData generate(InstrBufferx64& buff);
+    };
 };
