@@ -7,6 +7,7 @@
 
 class InstrBufferx64;
 
+#include <cstdint>
 #include <map>
 #include <ostream>
 #include <vector>

@@ -7,6 +7,8 @@
 
 #include "InstrBufferx64.hpp"
 
+#include <cstring>
+
 namespace {
     void populate_text(std::string in, char* out) {
         if (in.size() > 16) {

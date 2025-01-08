@@ -5,6 +5,9 @@
 
 #include "InstrBufferx64.hpp"
 
+#include <algorithm>
+#include <cstring>
+#include <vector>
 #include <sys/mman.h>
 
 void InstrBufferx64::execute() {
@@ -12,12 +15,24 @@ void InstrBufferx64::execute() {
         return;
     }
 
-    void* exememory = mmap(NULL,
+    void* exememory = nullptr;
+
+#if defined(__APPLE__) && defined(__MACH__)
+    exememory = mmap(NULL,
         _buffer.size(),
         PROT_READ | PROT_WRITE | PROT_EXEC,
         MAP_ANON | MAP_PRIVATE | MAP_JIT,
         -1,
         0);
+#else
+    exememory = mmap(NULL,
+        _buffer.size(),
+        PROT_READ | PROT_WRITE | PROT_EXEC,
+        MAP_ANON | MAP_PRIVATE,
+        -1,
+        0);
+#endif
+
     memset(exememory, 0, _buffer.size());
     memcpy(exememory, &_buffer[0], _buffer.size());
     reinterpret_cast<void(*)(void)>(exememory)();
@@ -175,7 +190,7 @@ void InstrBufferx64::update_jmp(JmpUpdate* update, int32_t offset) {
 
 void InstrBufferx64::append_buffer(InstrBufferx64& buffer) {
     auto currentSize = this->_buffer.size();
-    this->_buffer.append_range(buffer._buffer);
+    this->_buffer.insert(this->_buffer.end(), buffer._buffer.begin(), buffer._buffer.end());
 
     for (auto& update : buffer._updates) {
         this->_updates.push_back(std::move(update));

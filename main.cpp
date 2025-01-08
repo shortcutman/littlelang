@@ -17,6 +17,7 @@ void anotherfunction() {
     puts(ant);
 }
 
+#if defined(__APPLE__) && defined(__MACH__)
 void func2() {
     const char* another = "func2";
 
@@ -47,6 +48,7 @@ void func3() {
         call _puts
     )");
 }
+#endif
 
 void func4() {
     const char* another = "func4";
@@ -67,6 +69,7 @@ void func4() {
 
 typedef void(*funky)(void);
 
+#if defined(__APPLE__) && defined(__MACH__)
 void func5() {
     const char* another = "func5";
     void* dlHandle = dlopen(0, RTLD_NOW);
@@ -99,6 +102,7 @@ void func5() {
 
     ((funky)exememory)();
 }
+#endif
 
 void func6() {
     const char* another = "func6";
@@ -255,6 +259,6 @@ int main() {
     // func9();
     // test_macho();
     fizzbuzz_jit();
-    fizzbuzz_bin();
+    // fizzbuzz_bin();
     return 0;
 }

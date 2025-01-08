@@ -6,6 +6,8 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
+#include <string>
 #include <vector>
 
 class InstrBufferx64 {

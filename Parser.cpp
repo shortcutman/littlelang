@@ -7,6 +7,7 @@
 #include "Parser.hpp"
 
 #include <algorithm>
+#include <array>
 
 namespace {
     void trim_left(std::string_view& view) {
