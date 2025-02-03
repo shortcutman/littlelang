@@ -189,7 +189,7 @@ void Compiler_x64::compile_parameter_to_register(Param* param, InstrBufferx64::R
         bool imm64 = true;
 
 #ifdef __linux__
-        imm64 = _mode == Mode::Object ? false : true;
+        imm64 = _mode == Mode::ObjectFile ? false : true;
 #endif
 
         if (imm64) {
