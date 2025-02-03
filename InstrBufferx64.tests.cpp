@@ -35,6 +35,14 @@ TEST(InstrBufferx64, Mov_r64_imm64) {
         std::vector<uint8_t>({0x48, 0xb8, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11}));
 }
 
+TEST(InstrBufferx64, mov_r64_riprel32) {
+    InstrBufferx64 b;
+    b.mov_r64_riprel32(InstrBufferx64::Register::RCX, 0x55);
+    EXPECT_EQ(
+        b.buffer(),
+        std::vector<uint8_t>({0x48, 0x8b, 0x0d, 0x55, 0x00, 0x00, 0x00}));
+}
+
 TEST(InstrBufferx64, mov_stack_imm64) {
     InstrBufferx64 b;
     b.mov_stack_imm64(-8, 0x1122334455667788);

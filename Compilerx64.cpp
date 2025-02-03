@@ -186,8 +186,20 @@ void Compiler_x64::compile_parameter_to_register(Param* param, InstrBufferx64::R
 
     auto string = dynamic_cast<StringParam*>(param);
     if (string) {
-        auto cstrAddr = _buff->add_cstring(string->content, _buff->buffer().size() + 2);
-        _buff->mov_r64_imm64(dest, cstrAddr);
+        bool imm64 = true;
+
+#ifdef __linux__
+        imm64 = _mode == Mode::Object ? false : true;
+#endif
+
+        if (imm64) {
+            auto cstrAddr = _buff->add_cstring(string->content, _buff->buffer().size() + 2);
+            _buff->mov_r64_imm64(dest, cstrAddr);
+        } else {
+            auto cstrAddr = _buff->add_cstring(string->content, _buff->buffer().size() + 3);
+            _buff->mov_r64_riprel32(dest, 0);
+        }
+        
         return;
     }
 
