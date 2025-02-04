@@ -10,6 +10,7 @@ set(CMAKE_COMPILE_WARNING_AS_ERROR True)
 add_executable(LittleLang
     main.cpp
     Compilerx64.cpp
+    Elf.cpp
     InstrBufferx64.cpp
     MachO.cpp
     Parser.cpp
@@ -31,6 +32,7 @@ add_executable(
     Compilerx64.cpp
     Compilerx64.obj.tests.cpp
     Compilerx64.tests.cpp
+    Elf.cpp
     InstrBufferx64.cpp
     InstrBufferx64.tests.cpp
     MachO.cpp
