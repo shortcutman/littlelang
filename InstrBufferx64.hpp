@@ -56,7 +56,7 @@ public:
 
     void mov_r64_r64(Register dest, Register src);
     void mov_r64_imm64(Register dest, std::uint64_t input);
-    void mov_r64_riprel32(Register dest, std::int32_t input);
+    void lea_r64_riprel32(Register dest, std::int32_t input);
     void mov_stack_imm64(std::int8_t adjust, std::uint64_t value);
     void mov_stack_r64(std::int8_t adjust, Register src);
     void mov_r64_stack(Register dest, std::int8_t adjust);

@@ -56,9 +56,9 @@ void InstrBufferx64::mov_r64_imm64(Register dest, std::uint64_t input) {
     push_qword(input);
 }
 
-void InstrBufferx64::mov_r64_riprel32(Register dest, std::int32_t input) {
+void InstrBufferx64::lea_r64_riprel32(Register dest, std::int32_t input) {
     push_rexw();
-    push_byte(0x8b);
+    push_byte(0x8d);
     push_modrm(0, static_cast<uint8_t>(dest), 0b101);
     push_dword(input);
 }

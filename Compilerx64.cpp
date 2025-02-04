@@ -197,7 +197,7 @@ void Compiler_x64::compile_parameter_to_register(Param* param, InstrBufferx64::R
             _buff->mov_r64_imm64(dest, cstrAddr);
         } else {
             auto cstrAddr = _buff->add_cstring(string->content, _buff->buffer().size() + 3);
-            _buff->mov_r64_riprel32(dest, 0);
+            _buff->lea_r64_riprel32(dest, 0);
         }
         
         return;
