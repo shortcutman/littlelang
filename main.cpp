@@ -1,5 +1,6 @@
 
 #include "Compilerx64.hpp"
+#include "Elf.hpp"
 #include "InstrBufferx64.hpp"
 #include "MachO.hpp"
 #include "Parser.hpp"
@@ -194,6 +195,26 @@ void test_macho() {
     f.close();
 }
 
+void test_elf() {
+    std::string eg = R"(
+    puts("test");
+    )";
+
+    Parser p;
+    p.parse_block(eg);
+    InstrBufferx64 i;
+    auto compiler = Compiler_x64(p.block.get(), &i, Compiler_x64::Mode::ObjectFile);
+    compiler.compile_function();
+    
+    std::fstream f("./out.o", f.binary | f.out);
+    if (!f.is_open()) {
+        throw std::runtime_error("couldn't open");
+    }
+
+    elf::write(f, i);
+    f.close();
+}
+
 namespace {
     const std::string fizzbuzz_program = R"(
     int64 counter;
@@ -242,8 +263,13 @@ void fizzbuzz_bin() {
         throw std::runtime_error("couldn't open");
     }
 
+#ifdef __APPLE__
     macho::write(f, i);
     f.close();
+#elif __linux__
+    elf::write(f, i);
+    f.close();
+#endif
 }
 
 
@@ -258,7 +284,8 @@ int main() {
     // func8();
     // func9();
     // test_macho();
-    fizzbuzz_jit();
-    // fizzbuzz_bin();
+    // fizzbuzz_jit();
+    fizzbuzz_bin();
+    // test_elf();
     return 0;
 }
