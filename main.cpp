@@ -145,6 +145,19 @@ int main(int argc, char** argv) {
             {
                 elf::write(objectFile, instrbuff);
                 objectFile.close();
+
+                if (linkExe) {
+                    std::stringstream ss;
+                    ss << "ld -o ll_bin -dynamic-linker /lib64/ld-linux-x86-64.so.2 -lc /usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o /usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crtn.o ";
+                    ss << outputFile;
+
+                    auto linkres = system(ss.str().c_str());
+
+                    if (linkres != 0) {
+                        std::cout << "Linker exited with error: " << linkres << std::endl;
+                    }
+                }
+
                 break;
             }
 
