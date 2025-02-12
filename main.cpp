@@ -5,215 +5,11 @@
 #include "MachO.hpp"
 #include "Parser.hpp"
 
+#include "vendor/cli11/CLI11.hpp"
+
 #include <iostream>
 #include <fstream>
-#include <sys/mman.h>
-#include <string.h>
-#include <vector>
-#include <stdio.h>
-#include <dlfcn.h>
-
-void anotherfunction() {
-    const char* ant = "hello";
-    puts(ant);
-}
-
-#if defined(__APPLE__) && defined(__MACH__)
-void func2() {
-    const char* another = "func2";
-
-    asm (R"(
-        sub rsp, 16
-        mov rdi, qword ptr [rbp - 8]
-        call _puts
-    )");
-
-    asm (R"(
-        mov rdi, qword ptr [rbp - 8]
-        call _puts
-        add rsp, 16
-    )");
-}
-
-void func3() {
-    const char* another = "func3";
-
-    asm (R"(
-        call _puts
-    )"
-    :
-    : "D" (another));
-
-    asm (R"(
-        mov rdi, qword ptr [rbp - 8]
-        call _puts
-    )");
-}
-#endif
-
-void func4() {
-    const char* another = "func4";
-    puts(another);
-
-    printf("puts: %p\n", puts);
-    void* dlHandle = dlopen(0, RTLD_NOW);
-    void* isitputs = dlsym(dlHandle, "puts");
-    printf("puts: %p\n", isitputs);
-
-    asm (R"(
-        mov rdi, qword ptr [rbp - 8]
-        call rax
-    )"
-    :
-    : "a" (isitputs));
-}
-
-typedef void(*funky)(void);
-
-#if defined(__APPLE__) && defined(__MACH__)
-void func5() {
-    const char* another = "func5";
-    void* dlHandle = dlopen(0, RTLD_NOW);
-    void* putsaddr = dlsym(dlHandle, "puts");
-
-    std::vector<uint8_t> a {
-        0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //mov rax, imm64
-        0x48, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //mov rdi, imm64
-        0xff, 0xd0, //call rax
-        0xc3 //ret
-    };
-
-    memcpy(&a[2], &putsaddr, 8);
-    memcpy(&a[12], &another, 8);
-
-    std::vector<uint8_t> b;
-    b.insert(b.end(), {0x48, 0xb8});
-
-    uint8_t* bytes = reinterpret_cast<uint8_t*>(&putsaddr);
-    b.insert(b.end(), bytes, bytes + 8);
-
-    void* exememory = mmap(NULL,
-        1024,
-        PROT_READ | PROT_WRITE | PROT_EXEC,
-        MAP_ANON | MAP_PRIVATE | MAP_JIT,
-        -1,
-        0);
-    memset(exememory, 0, 1024);
-    memcpy(exememory, &a[0], a.size());
-
-    ((funky)exememory)();
-}
-#endif
-
-void func6() {
-    const char* another = "func6";
-    void* dlHandle = dlopen(0, RTLD_NOW);
-    void* putsaddr = dlsym(dlHandle, "puts");
-
-    InstrBufferx64 b;
-    b.mov_r64_imm64(InstrBufferx64::Register::RAX, reinterpret_cast<uint64_t>(putsaddr));
-    b.mov_r64_imm64(InstrBufferx64::Register::RDI, reinterpret_cast<uint64_t>(another));
-    b.call_r64(InstrBufferx64::Register::RAX);
-    b.ret();
-    b.execute();
-}
-
-void func7() {
-    std::string example = R"(puts("func7");)";
-
-    Parser p;
-    auto call = p.parse_function_call(example);
-    InstrBufferx64 i;
-    auto compiler = Compiler_x64(p.block.get(), &i);
-    compiler.compile_function_call(*call);
-    i.ret();
-    
-    i.execute();
-}
-
-void func8() {
-    std::string eg = R"(printf("test %i", 123);)";
-
-    Parser p;
-    auto call = p.parse_function_call(eg);
-    InstrBufferx64 i;
-    auto compiler = Compiler_x64(p.block.get(), &i);
-    compiler.compile_function_call(*call);
-    i.ret();
-    i.execute();
-    printf("\n");
-}
-
-void func9() {
-    std::string eg = R"(
-    int64 another;
-    another = 1;
-    while (another < 10) {
-        if (another < 5) {
-            puts("another is less than 5");
-        } else if (another < 10) {
-            puts("another is less than 10");
-        }
-        another = another + 1;
-    }
-    if (another == 10) {
-        if (another < 20) {
-            if (another < 15) {
-                if (another < 13) {
-                    printf("another: %i", another);
-                }
-            }
-        }
-    }
-    )";
-
-    Parser p;
-    p.parse_block(eg);
-    InstrBufferx64 i;
-    auto compiler = Compiler_x64(p.block.get(), &i);
-    compiler.compile_function();
-    i.execute();
-}
-
-void test_macho() {
-    std::string eg = R"(
-    puts("test");
-    )";
-
-    Parser p;
-    p.parse_block(eg);
-    InstrBufferx64 i;
-    auto compiler = Compiler_x64(p.block.get(), &i, Compiler_x64::Mode::ObjectFile);
-    compiler.compile_function();
-    
-    std::fstream f("./out.o", f.binary | f.out);
-    if (!f.is_open()) {
-        throw std::runtime_error("couldn't open");
-    }
-
-    macho::write(f, i);
-    f.close();
-}
-
-void test_elf() {
-    std::string eg = R"(
-    puts("test");
-    )";
-
-    Parser p;
-    p.parse_block(eg);
-    InstrBufferx64 i;
-    auto compiler = Compiler_x64(p.block.get(), &i, Compiler_x64::Mode::ObjectFile);
-    compiler.compile_function();
-    
-    std::fstream f("./out.o", f.binary | f.out);
-    if (!f.is_open()) {
-        throw std::runtime_error("couldn't open");
-    }
-
-    elf::write(f, i);
-    f.close();
-}
+#include <string>
 
 namespace {
     const std::string fizzbuzz_program = R"(
@@ -273,19 +69,45 @@ void fizzbuzz_bin() {
 }
 
 
-int main() {
-    // anotherfunction();
-    // func2();
-    // func3();
-    // func4();
-    // func5();
-    // func6();
-    // func7();
-    // func8();
-    // func9();
-    // test_macho();
+int main(int argc, char** argv) {
+
+    CLI::App app{"Littlelang is a simple programming language that is compiled to machine code for either executables or run in-memory.", "littlelang"};
+
+    std::string file;
+    Compiler_x64::Mode mode{Compiler_x64::Mode::JIT};
+    std::map<std::string, Compiler_x64::Mode> map{{"jit", Compiler_x64::Mode::JIT}, {"object", Compiler_x64::Mode::ObjectFile}};
+
+    app.add_option("file", file, "An input file.")->required();
+    app.add_option("-m,--mode",mode,"Compile and run mode.")->transform(CLI::CheckedTransformer(map, CLI::ignore_case));
+
+    try {
+        app.parse(argc, argv);
+    } catch (const CLI::ParseError& e) {
+        return app.exit(e);
+    }
+
+    std::ifstream program_file(file);
+    if (!program_file.is_open()) {
+        std::cout << "Unable to open file: " << file << std::endl;
+        return 0;
+    }
+
+    std::stringstream program_text;
+    program_text << program_file.rdbuf();
+
+    Parser parser;
+    parser.parse_block(program_text.str());
+    InstrBufferx64 instrbuff;
+    auto compiler = Compiler_x64(parser.block.get(), &instrbuff, mode);
+    compiler.compile_function();
+
+    if (mode == Compiler_x64::Mode::JIT) {
+        instrbuff.execute();
+    } else {
+        std::cout << "Not yet implemented." << std::endl;
+    }
+
     // fizzbuzz_jit();
-    fizzbuzz_bin();
-    // test_elf();
+    // fizzbuzz_bin();
     return 0;
 }
