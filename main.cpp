@@ -75,10 +75,17 @@ int main(int argc, char** argv) {
 
     std::string file;
     Compiler_x64::Mode mode{Compiler_x64::Mode::JIT};
-    std::map<std::string, Compiler_x64::Mode> map{{"jit", Compiler_x64::Mode::JIT}, {"object", Compiler_x64::Mode::ObjectFile}};
+    std::map<std::string, Compiler_x64::Mode> compilerModeMap{{"jit", Compiler_x64::Mode::JIT}, {"object", Compiler_x64::Mode::ObjectFile}};
+
+    enum class ObjectFileType { Macho, ELF };
+    std::map<std::string, ObjectFileType> objectFileTypeMap{{"macho", ObjectFileType::Macho}, {"elf", ObjectFileType::ELF}};
+    ObjectFileType objectFileType;
+    std::string outputFile;
 
     app.add_option("file", file, "An input file.")->required();
-    app.add_option("-m,--mode",mode,"Compile and run mode.")->transform(CLI::CheckedTransformer(map, CLI::ignore_case));
+    app.add_option("-m,--mode", mode, "Compile and run mode.")->transform(CLI::CheckedTransformer(compilerModeMap, CLI::ignore_case));
+    auto optObj = app.add_option("-t,--object-type", objectFileType, "Object file type to ouput.")->transform(CLI::CheckedTransformer(objectFileTypeMap, CLI::ignore_case));
+    app.add_option("-o,--output", outputFile, "Output file.")->needs(optObj);
 
     try {
         app.parse(argc, argv);
@@ -89,7 +96,7 @@ int main(int argc, char** argv) {
     std::ifstream program_file(file);
     if (!program_file.is_open()) {
         std::cout << "Unable to open file: " << file << std::endl;
-        return 0;
+        return 1;
     }
 
     std::stringstream program_text;
@@ -103,11 +110,36 @@ int main(int argc, char** argv) {
 
     if (mode == Compiler_x64::Mode::JIT) {
         instrbuff.execute();
-    } else {
-        std::cout << "Not yet implemented." << std::endl;
+    } else if (mode == Compiler_x64::Mode::ObjectFile) {
+
+        std::fstream objectFile(outputFile, std::fstream::binary | std::fstream::out);
+        if (!objectFile.is_open()) {
+            std::cout << "Couldn't open file path for writing out object file: " << outputFile << std::endl;
+            return 1;
+        }
+
+        switch (objectFileType) {
+            case ObjectFileType::Macho:
+            {
+                macho::write(objectFile, instrbuff);
+                objectFile.close();
+                break;
+            }
+
+            case ObjectFileType::ELF:
+            {
+                elf::write(objectFile, instrbuff);
+                objectFile.close();
+                break;
+            }
+
+            default:
+            {
+                std::cout << "Unknown object file type." << std::endl;
+                break;
+            }
+        }
     }
 
-    // fizzbuzz_jit();
-    // fizzbuzz_bin();
     return 0;
 }
