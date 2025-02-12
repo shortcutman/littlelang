@@ -4,10 +4,16 @@ This is a little language that is currently compiled into x86_64 op code and exe
 
 It has int64 variables, string constants and can do some basic logic: if/elseif/else blocks, and while loops. My target was to write and run FizzBuzz so only the operations I needed for that have been implemented.
 
-Some future learning ideas from this:
+There are a number of options in the CLI that can do some fun things:
+* `--mode` will allow you to either a program directly the compilers memory using `jit` or setup to output an object file `object`.
+* `--object-type` sets the object file format to use, either `macho` for Mach-O object file or `elf` for ELF.
+* `--output` indicates where to write the object file
+* `--link` will invoke the system linker to link the object file into an executable. Behaviour varies based on the `--object-type` setting:
+    * `macho` assumes you're running Mac OS.
+    * `elf` assumes gcc and Ubuntu at the moment.
+
+Potential future ideas:
 * ARM64 compilation.
-* Mach-o binary creation.
-* ELF binary creation.
 
 ## References
 
