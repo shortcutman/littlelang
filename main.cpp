@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
 
                 if (linkExe) {
                     std::stringstream ss;
-                    ss << "ld -ld_classic -arch x86_64 -o ldtest.o -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -lSystem ";
+                    ss << "ld -ld_classic -arch x86_64 -o ll_bin -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -lSystem ";
                     ss << outputFile;
 
                     auto linkres = system(ss.str().c_str());
