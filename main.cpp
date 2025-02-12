@@ -70,17 +70,17 @@ void fizzbuzz_bin() {
 
 
 int main(int argc, char** argv) {
+    enum class ObjectFileType { Macho, ELF };
 
-    CLI::App app{"Littlelang is a simple programming language that is compiled to machine code for either executables or run in-memory.", "littlelang"};
+    std::map<std::string, Compiler_x64::Mode> compilerModeMap{{"jit", Compiler_x64::Mode::JIT}, {"object", Compiler_x64::Mode::ObjectFile}};
+    std::map<std::string, ObjectFileType> objectFileTypeMap{{"macho", ObjectFileType::Macho}, {"elf", ObjectFileType::ELF}};
 
     std::string file;
     Compiler_x64::Mode mode{Compiler_x64::Mode::JIT};
-    std::map<std::string, Compiler_x64::Mode> compilerModeMap{{"jit", Compiler_x64::Mode::JIT}, {"object", Compiler_x64::Mode::ObjectFile}};
-
-    enum class ObjectFileType { Macho, ELF };
-    std::map<std::string, ObjectFileType> objectFileTypeMap{{"macho", ObjectFileType::Macho}, {"elf", ObjectFileType::ELF}};
     ObjectFileType objectFileType;
     std::string outputFile;
+
+    CLI::App app{"Littlelang is a simple programming language that is compiled to machine code for either executables or run in-memory.", "littlelang"};
 
     app.add_option("file", file, "An input file.")->required();
     app.add_option("-m,--mode", mode, "Compile and run mode.")->transform(CLI::CheckedTransformer(compilerModeMap, CLI::ignore_case));
