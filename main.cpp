@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
     Compiler_x64::Mode mode{Compiler_x64::Mode::JIT};
     ObjectFileType objectFileType;
     std::string outputFile;
+    bool linkExe = false;
 
     CLI::App app{"Littlelang is a simple programming language that is compiled to machine code for either executables or run in-memory.", "littlelang"};
 
@@ -86,6 +87,7 @@ int main(int argc, char** argv) {
     app.add_option("-m,--mode", mode, "Compile and run mode.")->transform(CLI::CheckedTransformer(compilerModeMap, CLI::ignore_case));
     auto optObj = app.add_option("-t,--object-type", objectFileType, "Object file type to ouput.")->transform(CLI::CheckedTransformer(objectFileTypeMap, CLI::ignore_case));
     app.add_option("-o,--output", outputFile, "Output file.")->needs(optObj);
+    app.add_flag("-L, --link", linkExe, "Link output to an exe utilising the system linker.")->needs(optObj);
 
     try {
         app.parse(argc, argv);
@@ -123,6 +125,19 @@ int main(int argc, char** argv) {
             {
                 macho::write(objectFile, instrbuff);
                 objectFile.close();
+
+                if (linkExe) {
+                    std::stringstream ss;
+                    ss << "ld -ld_classic -arch x86_64 -o ldtest.o -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -lSystem ";
+                    ss << outputFile;
+
+                    auto linkres = system(ss.str().c_str());
+
+                    if (linkres != 0) {
+                        std::cout << "Linker exited with error: " << linkres << std::endl;
+                    }
+                }
+
                 break;
             }
 
