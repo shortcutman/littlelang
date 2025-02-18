@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 
 TEST(Parser, parse_function_call) {
-    std::string eg = R"(puts("test");)";
+    std::string_view eg = R"(puts("test");)";
     Parser p;
     auto call = p.parse_function_call(eg);
     EXPECT_EQ(call->functionName, "puts");
@@ -19,7 +19,7 @@ TEST(Parser, parse_function_call) {
 }
 
 TEST(Parser, printf_two_args) {
-    std::string eg = "printf(\"test %i \n\",123);";
+    std::string_view eg = "printf(\"test %i \n\",123);";
     Parser p;
     auto call = p.parse_function_call(eg);
     EXPECT_EQ(call->functionName, "printf");
@@ -36,7 +36,7 @@ TEST(Parser, printf_two_args) {
 }
 
 TEST(Parser, parse_function_call_stack_argument) {
-    std::string eg = "printf(\"test %i \n\",intarg);";
+    std::string_view eg = "printf(\"test %i \n\",intarg);";
     Parser p;
     auto call = p.parse_function_call(eg);
     EXPECT_EQ(call->functionName, "printf");

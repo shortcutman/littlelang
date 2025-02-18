@@ -79,11 +79,8 @@ void Parser::parse_block(std::string_view input) {
                 block->statements.push_back(std::move(whileStatement));
             } else {
                 //function call
-                auto step2 = input.find_first_of(";");
-                std::string_view statement(input.begin(), input.begin() + step2 + 1);
-                auto call = parse_function_call(statement);
+                auto call = parse_function_call(input);
                 block->statements.push_back(std::move(call));
-                input.remove_prefix(step2 + 1);
             }
         } else if (input[step] == '=') {
             //assignment
@@ -104,7 +101,7 @@ void Parser::parse_block(std::string_view input) {
     }
 }
 
-FunctionCallPtr Parser::parse_function_call(std::string_view input) {
+FunctionCallPtr Parser::parse_function_call(std::string_view& input) {
     auto call = std::make_unique<FunctionCall>();
 
     auto nameEnd = input.find_first_of("(");
@@ -117,19 +114,27 @@ FunctionCallPtr Parser::parse_function_call(std::string_view input) {
     call->functionName = name;
     input.remove_prefix(nameEnd + 1);
 
-
-    auto tokenEnd = input.find_first_of(",)");
-    while (tokenEnd != std::string_view::npos) {
+    while (!input.empty()) {
+        auto tokenEnd = input.find_first_of(",)");
         auto token = input.substr(0, tokenEnd);
         auto param = parse_parameter(token);
         call->params.push_back(std::move(param));
-        input.remove_prefix(tokenEnd + 1);
-        tokenEnd = input.find_first_of(",)");
+        input.remove_prefix(tokenEnd);
+        
+        bool finalParam = input[0] == ')';
+        input.remove_prefix(1);
+
+        if (finalParam) {
+            break;
+        }
     }
 
+    trim_left(input);
     if (input[0] != ';') {
         throw std::runtime_error("Unexpected character.");
     }
+
+    input.remove_prefix(1);
 
     return call;
 }

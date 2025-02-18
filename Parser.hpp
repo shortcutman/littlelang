@@ -24,7 +24,7 @@ public:
 
     VariableDefinition parse_variable_definition(std::string_view input);
 
-    FunctionCallPtr parse_function_call(std::string_view input);
+    FunctionCallPtr parse_function_call(std::string_view& input);
     VariableAssignmentPtr parse_variable_assignment(std::string_view input);
     ParamPtr parse_parameter(std::string_view input);
     IfChainStatementPtr parse_if_chain(std::string_view& input);
