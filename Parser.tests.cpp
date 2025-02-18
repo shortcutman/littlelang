@@ -62,7 +62,7 @@ TEST(Parser, parse_variable_definition) {
 }
 
 TEST(Parser, parse_variable_assignment_to_const) {
-    std::string eg = R"(test = 123;)";
+    std::string_view eg = R"(test = 123;)";
     Parser p;
     auto assign = p.parse_variable_assignment(eg);
 
@@ -74,7 +74,7 @@ TEST(Parser, parse_variable_assignment_to_const) {
 }
 
 TEST(Parser, parse_variable_assignment_to_variable) {
-    std::string eg = R"(test = another;)";
+    std::string_view eg = R"(test = another;)";
     Parser p;
     auto assign = p.parse_variable_assignment(eg);
 
@@ -86,7 +86,7 @@ TEST(Parser, parse_variable_assignment_to_variable) {
 }
 
 TEST(Parser, parse_variable_assignment_to_int64_const_addition) {
-    std::string eg = R"(test = 1 + 2;)";
+    std::string_view eg = R"(test = 1 + 2;)";
     Parser p;
     auto assign = p.parse_variable_assignment(eg);
 
@@ -112,7 +112,7 @@ TEST(Parser, parse_variable_assignment_to_int64_const_addition) {
 }
 
 TEST(Parser, parse_variable_assignment_to_int64_const_modulo) {
-    std::string eg = R"(test = 4 % 3;)";
+    std::string_view eg = R"(test = 4 % 3;)";
     Parser p;
     auto assign = p.parse_variable_assignment(eg);
 

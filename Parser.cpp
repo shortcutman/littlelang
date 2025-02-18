@@ -84,11 +84,8 @@ void Parser::parse_block(std::string_view input) {
             }
         } else if (input[step] == '=') {
             //assignment
-            auto step2 = input.find_first_of(";");
-            std::string_view statement(input.begin(), input.begin() + step2 + 1);
-            auto assignment = parse_variable_assignment(statement);
+            auto assignment = parse_variable_assignment(input);
             block->statements.push_back(std::move(assignment));
-            input.remove_prefix(step2 + 1);
         } else if (input[step] == ';') {
             //variable definition
             std::string_view statement(input.begin(), input.begin() + step + 1);
@@ -165,7 +162,7 @@ VariableDefinition Parser::parse_variable_definition(std::string_view input) {
     return def;
 }
 
-VariableAssignmentPtr Parser::parse_variable_assignment(std::string_view input) {
+VariableAssignmentPtr Parser::parse_variable_assignment(std::string_view& input) {
     auto assign = std::make_unique<VariableAssignment>();
 
     auto splitter = input.find_first_of('=');
@@ -181,6 +178,7 @@ VariableAssignmentPtr Parser::parse_variable_assignment(std::string_view input) 
     auto end = input.find_first_of(';');
     auto value = input.substr(0, end);
     assign->value = parse_parameter(value);
+    input.remove_prefix(end + 1);
     return assign;
 }
 
