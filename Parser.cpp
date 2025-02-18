@@ -88,10 +88,8 @@ void Parser::parse_block(std::string_view input) {
             block->statements.push_back(std::move(assignment));
         } else if (input[step] == ';') {
             //variable definition
-            std::string_view statement(input.begin(), input.begin() + step + 1);
-            auto def = parse_variable_definition(statement);
+            auto def = parse_variable_definition(input);
             block->vars.push_back(def);
-            input.remove_prefix(step + 1);
         } else {
             throw std::runtime_error("unknown section");
         }
@@ -136,13 +134,12 @@ FunctionCallPtr Parser::parse_function_call(std::string_view& input) {
     return call;
 }
 
-VariableDefinition Parser::parse_variable_definition(std::string_view input) {
+VariableDefinition Parser::parse_variable_definition(std::string_view& input) {
     VariableDefinition def;
 
     trim_left(input);
     auto splitter = input.find_first_of(' ');
     auto type = input.substr(0, splitter);
-    trim_sides(type);
 
     if (type != "int64") {
         throw std::runtime_error("unexpected type");
@@ -158,6 +155,8 @@ VariableDefinition Parser::parse_variable_definition(std::string_view input) {
         throw std::runtime_error("Unexpected whitespace.");
     }
     def.name = name;
+
+    input.remove_prefix(splitter + 1);
 
     return def;
 }

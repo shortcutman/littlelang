@@ -22,7 +22,7 @@ public:
 
     void parse_block(std::string_view input);
 
-    VariableDefinition parse_variable_definition(std::string_view input);
+    VariableDefinition parse_variable_definition(std::string_view& input);
 
     FunctionCallPtr parse_function_call(std::string_view& input);
     VariableAssignmentPtr parse_variable_assignment(std::string_view& input);

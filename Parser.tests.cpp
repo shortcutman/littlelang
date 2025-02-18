@@ -53,7 +53,7 @@ TEST(Parser, parse_function_call_stack_argument) {
 }
 
 TEST(Parser, parse_variable_definition) {
-    std::string eg = R"(int64 test;)";
+    std::string_view eg = R"(int64 test;)";
     Parser p;
     auto definition = p.parse_variable_definition(eg);
 
