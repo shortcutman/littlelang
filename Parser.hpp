@@ -22,6 +22,8 @@ public:
 
     void parse_block(std::string_view input);
 
+    FunctionDefinitionPtr parse_function_definition(std::string_view& input);
+
     VariableDefinition parse_variable_definition(std::string_view& input);
 
     FunctionCallPtr parse_function_call(std::string_view& input);

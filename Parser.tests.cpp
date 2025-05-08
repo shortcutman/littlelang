@@ -515,3 +515,25 @@ TEST(Parser, parse_while_statement_const_parameters) {
     EXPECT_TRUE(ifstatement->block->statements.empty());
     EXPECT_EQ(ifstatement->block->parent, p.block.get());
 }
+
+TEST(Parser, parse_function_definition) {
+    std::string_view eg = R"(fn main() {})";
+    Parser p;
+
+    auto funcDef = p.parse_function_definition(eg);
+    ASSERT_TRUE(funcDef);
+    ASSERT_TRUE(funcDef->block);
+
+    EXPECT_EQ(funcDef->name, "main");
+}
+
+TEST(Parser, parse_function_definition2) {
+    std::string_view eg = R"( fn test () {})";
+    Parser p;
+
+    auto funcDef = p.parse_function_definition(eg);
+    ASSERT_TRUE(funcDef);
+    ASSERT_TRUE(funcDef->block);
+
+    EXPECT_EQ(funcDef->name, "test");
+}

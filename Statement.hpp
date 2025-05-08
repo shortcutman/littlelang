@@ -26,6 +26,12 @@ struct Block {
     }
 };
 
+struct FunctionDefinition {
+    std::string name;
+    std::unique_ptr<Block> block;
+};
+typedef std::unique_ptr<FunctionDefinition> FunctionDefinitionPtr;
+
 struct Statement {
     virtual ~Statement() = default;
 };
