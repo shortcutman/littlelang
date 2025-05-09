@@ -17,8 +17,6 @@ Parser::Parser()
 }
 
 void Parser::parse_block(std::string_view input) {
-    std::array<char, 3> steps = { '(', '=', ' ' };
-
     while (!input.empty()) {
         auto step = input.find_first_of("(=;");
         if (step == std::string_view::npos) {
