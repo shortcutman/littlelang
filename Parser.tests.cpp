@@ -548,7 +548,7 @@ TEST(Parser, parse_function_definition_content) {
     EXPECT_EQ(funcDef->name, "test");
 
     EXPECT_TRUE(funcDef->block->vars.empty());
-    EXPECT_EQ(funcDef->block->parent, &p);
+    EXPECT_EQ(funcDef->block->parent, p.block.get());
 
     ASSERT_EQ(funcDef->block->statements.size(), 1);
     auto call = dynamic_cast<FunctionCall*>(funcDef->block->statements.front().get());
