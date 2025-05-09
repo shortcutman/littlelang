@@ -40,6 +40,8 @@ add_executable(
     Parser.cpp
     ParsedBlock.tests.cpp
     Parser.tests.cpp
+    TranslationUnit.cpp
+    TranslationUnit.tests.cpp
 )
 target_link_libraries(
     ll_tests
