@@ -527,7 +527,7 @@ TEST(Parser, parse_function_definition) {
     EXPECT_EQ(funcDef->name, "main");
 }
 
-TEST(Parser, parse_function_definition2) {
+TEST(Parser, parse_function_definition_whitespace) {
     std::string_view eg = R"( fn test () {})";
     Parser p;
 
@@ -536,4 +536,24 @@ TEST(Parser, parse_function_definition2) {
     ASSERT_TRUE(funcDef->block);
 
     EXPECT_EQ(funcDef->name, "test");
+}
+
+TEST(Parser, parse_function_definition_content) {
+    std::string_view eg = R"( fn test () { printf("asdf"); })";
+    Parser p;
+
+    auto funcDef = p.parse_function_definition(eg);
+    ASSERT_TRUE(funcDef);
+    ASSERT_TRUE(funcDef->block);
+    EXPECT_EQ(funcDef->name, "test");
+
+    EXPECT_TRUE(funcDef->block->vars.empty());
+    EXPECT_EQ(funcDef->block->parent, &p);
+
+    ASSERT_EQ(funcDef->block->statements.size(), 1);
+    auto call = dynamic_cast<FunctionCall*>(funcDef->block->statements.front().get());
+    ASSERT_TRUE(call);
+
+    EXPECT_EQ(call->functionName, "printf");
+    EXPECT_EQ(call->params.size(), 1);
 }
