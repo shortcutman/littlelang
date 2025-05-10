@@ -12,8 +12,20 @@ ll::TranslationUnit::TranslationUnit() {
 
 }
 
-ll::TranslationUnit ll::TranslationUnit::parse_translation_unit(std::string_view& input) {
-    return TranslationUnit();
+ll::TranslationUnitPtr ll::TranslationUnit::parse_translation_unit(std::string_view& input) {
+    auto tu = std::make_unique<TranslationUnit>();
+
+    trim_left(input);
+    while (!input.empty()) {
+        if (input.substr(0, 3) == "fn ") {
+            auto function = TranslationUnit::parse_function_definition(input);
+            tu->functions.push_back(std::move(function));
+        } else {
+            throw std::runtime_error("Unknown input.");
+        }
+    }
+
+    return tu;
 }
 
 ll::FunctionDefinitionPtr ll::TranslationUnit::parse_function_definition(std::string_view& input) {

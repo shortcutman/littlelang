@@ -11,6 +11,47 @@
 
 using namespace ll;
 
+TEST(TranslationUnit, parse_translation_unit_empty) {
+    std::string_view eg = R"()";
+
+    auto tu = TranslationUnit::parse_translation_unit(eg);
+    ASSERT_TRUE(tu);
+    ASSERT_TRUE(tu->functions.empty());
+}
+
+TEST(TranslationUnit, parse_translation_unit_one_function) {
+    std::string_view eg = R"(fn main() {})";
+
+    auto tu = TranslationUnit::parse_translation_unit(eg);
+    ASSERT_TRUE(tu);
+    ASSERT_EQ(tu->functions.size(), 1);
+
+    auto funcDef = tu->functions.front().get();
+    ASSERT_TRUE(funcDef);
+    EXPECT_EQ(funcDef->name, "main");
+}
+
+TEST(TranslationUnit, parse_translation_unit_two_function) {
+    std::string_view eg = R"(fn main() {} fn test() {})";
+
+    auto tu = TranslationUnit::parse_translation_unit(eg);
+    ASSERT_TRUE(tu);
+    ASSERT_EQ(tu->functions.size(), 2);
+
+    auto funcDef = tu->functions.front().get();
+    ASSERT_TRUE(funcDef);
+    EXPECT_EQ(funcDef->name, "main");
+
+    auto funcDef2 = tu->functions.back().get();
+    ASSERT_TRUE(funcDef2);
+    EXPECT_EQ(funcDef2->name, "test");
+}
+
+TEST(TranslationUnit, parse_translation_unit_parse_error) {
+    std::string_view eg = R"(fn main() {} test() {})";
+    ASSERT_THROW(TranslationUnit::parse_translation_unit(eg), std::runtime_error);
+}
+
 TEST(TranslationUnit, parse_function_definition) {
     std::string_view eg = R"(fn main() {})";
 
