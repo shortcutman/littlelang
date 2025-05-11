@@ -4,6 +4,7 @@
 #include "InstrBufferx64.hpp"
 #include "MachO.hpp"
 #include "Parser.hpp"
+#include "TranslationUnit.hpp"
 
 #include "vendor/cli11/CLI11.hpp"
 
@@ -44,7 +45,7 @@ void fizzbuzz_jit() {
     InstrBufferx64 i;
     auto compiler = Compiler_x64(p.block.get(), &i, Compiler_x64::Mode::JIT);
     compiler.compile_function();
-    i.execute();
+    i.execute(0);
 }
 
 void fizzbuzz_bin() {
@@ -101,18 +102,40 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    std::stringstream program_text;
-    program_text << program_file.rdbuf();
+    std::stringstream program_text_stream;
+    program_text_stream << program_file.rdbuf();
+    auto program_text = program_text_stream.str();
 
-    Parser parser;
-    parser.parse_block(program_text.str());
     InstrBufferx64 instrbuff;
-    auto compiler = Compiler_x64(parser.block.get(), &instrbuff, mode);
-    compiler.compile_function();
 
     if (mode == Compiler_x64::Mode::JIT) {
-        instrbuff.execute();
+        struct FunctionSymbol {
+            std::string name;
+            std::size_t offset;
+        };
+        std::vector<FunctionSymbol> symbols;
+    
+        auto sv = std::string_view{program_text};
+        auto tu = ll::TranslationUnit::parse_translation_unit(sv);
+        for (auto& func : tu->functions) {
+            symbols.push_back(FunctionSymbol{
+                .name = func->name,
+                .offset = instrbuff.buffer().size()
+            });
+            auto compiler = Compiler_x64(func->block.get(), &instrbuff, mode);
+            compiler.compile_function();
+        }
+    
+        auto entryPoint = std::find_if(symbols.begin(), symbols.end(), [] (auto& v) {
+            return v.name == "main";
+        });
+
+        instrbuff.execute(entryPoint->offset);
     } else if (mode == Compiler_x64::Mode::ObjectFile) {
+        Parser parser;
+        parser.parse_block(program_text);
+        auto compiler = Compiler_x64(parser.block.get(), &instrbuff, mode);
+        compiler.compile_function();
 
         std::fstream objectFile(outputFile, std::fstream::binary | std::fstream::out);
         if (!objectFile.is_open()) {
