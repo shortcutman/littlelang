@@ -49,7 +49,7 @@ private:
 public:
     InstrBufferx64() {}
 
-    void execute();
+    void execute(std::size_t entrypoint = 0);
     const std::vector<std::uint8_t>& buffer() const;
 
     uint64_t add_cstring(const std::string& str, size_t location);

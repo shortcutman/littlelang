@@ -10,7 +10,7 @@
 #include <vector>
 #include <sys/mman.h>
 
-void InstrBufferx64::execute() {
+void InstrBufferx64::execute(std::size_t entrypoint) {
     if (_buffer.empty()) {
         return;
     }
@@ -35,7 +35,9 @@ void InstrBufferx64::execute() {
 
     memset(exememory, 0, _buffer.size());
     memcpy(exememory, &_buffer[0], _buffer.size());
-    reinterpret_cast<void(*)(void)>(exememory)();
+
+    auto exMemoryOffset = reinterpret_cast<unsigned char*>(exememory) + entrypoint;
+    reinterpret_cast<void(*)(void)>(exMemoryOffset)();
 }
 
 const std::vector<uint8_t>& InstrBufferx64::buffer() const {
