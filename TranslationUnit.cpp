@@ -21,7 +21,7 @@ ll::TranslationUnitPtr ll::TranslationUnit::parse_translation_unit(std::string_v
             auto function = TranslationUnit::parse_function_definition(input);
             tu->functions.push_back(std::move(function));
         } else {
-            throw std::runtime_error("Unknown input.");
+            throw std::runtime_error("Couldn't find function definition.");
         }
     }
 
