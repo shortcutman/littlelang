@@ -67,7 +67,10 @@ FunctionCallPtr Parser::parse_function_call(std::string_view& input) {
         auto tokenEnd = input.find_first_of(",)");
         auto token = input.substr(0, tokenEnd);
         auto param = parse_parameter(token);
-        call->params.push_back(std::move(param));
+        if (param) {
+            call->params.push_back(std::move(param));
+        }
+        
         input.remove_prefix(tokenEnd);
         
         bool finalParam = input[0] == ')';
@@ -137,6 +140,11 @@ VariableAssignmentPtr Parser::parse_variable_assignment(std::string_view& input)
 
 ParamPtr Parser::parse_parameter(std::string_view input) {
     trim_sides(input);
+
+    if (input.empty()) {
+        return nullptr;
+    }
+
     if (input[0] == '"') {
         if (input.back() != '"') {
             throw std::runtime_error("no end to string found");

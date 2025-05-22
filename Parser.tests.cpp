@@ -7,7 +7,16 @@
 
 #include <gtest/gtest.h>
 
-TEST(Parser, parse_function_call) {
+TEST(Parser, parse_function_call_no_args) {
+    std::string_view eg = R"(cool();)";
+    Parser p;
+    auto call = p.parse_function_call(eg);
+    EXPECT_EQ(call->functionName, "cool");
+
+    EXPECT_TRUE(call->params.empty());
+}
+
+TEST(Parser, parse_function_call_one_arg) {
     std::string_view eg = R"(puts("test");)";
     Parser p;
     auto call = p.parse_function_call(eg);
