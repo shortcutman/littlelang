@@ -44,6 +44,10 @@ const std::vector<uint8_t>& InstrBufferx64::buffer() const {
     return _buffer;
 }
 
+std::vector<uint8_t>& InstrBufferx64::buffer() {
+    return _buffer;
+}
+
 uint64_t InstrBufferx64::add_cstring(const std::string& str, size_t location) {
     _cstrings.push_back(std::make_unique<InstrBufferx64::CString>(InstrBufferx64::CString{
         .string = str,
