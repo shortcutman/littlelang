@@ -12,6 +12,7 @@ add_executable(LittleLang
     Compilerx64.cpp
     Elf.cpp
     InstrBufferx64.cpp
+    Linker.cpp
     MachO.cpp
     Parser.cpp
     TranslationUnit.cpp
@@ -36,6 +37,8 @@ add_executable(
     Elf.cpp
     InstrBufferx64.cpp
     InstrBufferx64.tests.cpp
+    Linker.cpp
+    Linker.tests.cpp
     MachO.cpp
     MachO.tests.cpp
     Parser.cpp
