@@ -36,9 +36,11 @@ TEST(Compilerx64Tests, compile_function_call_with_intparam) {
             0x48, 0xb8, putsaddrchr[0], putsaddrchr[1], putsaddrchr[2], putsaddrchr[3], putsaddrchr[4], putsaddrchr[5], putsaddrchr[6], putsaddrchr[7], //mov rax, imm64
             0xff, 0xd0 //call rax
         }));
+
+    EXPECT_TRUE(buffer._externFuncs.empty());
 }
 
-TEST(Compilerx64Tests, compile_function_call_with_stringparam) {
+TEST(Compilerx64Tests, compile_function_call_jit_with_stringparam) {
     FunctionCall call;
     call.functionName = "puts";
 
@@ -48,7 +50,7 @@ TEST(Compilerx64Tests, compile_function_call_with_stringparam) {
 
     Block block;
     InstrBufferx64 buffer;
-    auto compiler = Compiler_x64(&block, &buffer);
+    auto compiler = Compiler_x64(&block, &buffer, Compiler_x64::Mode::JIT);
     compiler.compile_function_call(call);
 
     void* dlHandle = dlopen(0, RTLD_NOW);
@@ -71,6 +73,46 @@ TEST(Compilerx64Tests, compile_function_call_with_stringparam) {
     EXPECT_EQ(
         buffer.buffer(),
         expected);
+
+    EXPECT_TRUE(buffer._externFuncs.empty());
+}
+
+TEST(Compilerx64Tests, compile_function_call_objectfile_with_stringparam) {
+    FunctionCall call;
+    call.functionName = "puts";
+
+    auto stringparam = std::make_unique<StringParam>();
+    stringparam->content = "string";
+    call.params.push_back(std::move(stringparam));
+
+    Block block;
+    InstrBufferx64 buffer;
+    auto compiler = Compiler_x64(&block, &buffer, Compiler_x64::Mode::ObjectFile);
+    compiler.compile_function_call(call);
+
+    uint8_t* straddrchr = reinterpret_cast<uint8_t*>(const_cast<char*>(buffer._cstrings.back()->string.c_str()));
+    uint8_t* straddr = reinterpret_cast<uint8_t*>(&straddrchr);
+
+    std::vector<uint8_t> expected;
+
+#ifdef __APPLE__
+    //mov rdi, imm64
+    expected.insert(expected.end(), {0x48, 0xbf});
+    expected.insert(expected.end(), straddr, straddr + 8);
+    //call rel32; with no linking
+    expected.insert(expected.end(), {0xe8, 0x00, 0x00, 0x00, 0x00});
+#endif
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        expected);
+
+    EXPECT_EQ(
+        buffer._externFuncs.front(),
+        InstrBufferx64::ExternFunction({
+            .symbol = call.functionName,
+            .location = 11
+        }));
 }
 
 TEST(Compilerx64Tests, compile_multi_args) {
@@ -102,6 +144,54 @@ TEST(Compilerx64Tests, compile_multi_args) {
             0x48, 0xbe, 0xd2, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //mov rdi, imm64
             0x48, 0xb8, putsaddrchr[0], putsaddrchr[1], putsaddrchr[2], putsaddrchr[3], putsaddrchr[4], putsaddrchr[5], putsaddrchr[6], putsaddrchr[7], //mov rax, imm64
             0xff, 0xd0 //call rax
+        }));
+
+    EXPECT_TRUE(buffer._externFuncs.empty());
+}
+
+TEST(Compilerx64Tests, compile_local_function_jit_no_arguments) {
+    FunctionCall call;
+    call.functionName = "cool";
+
+    Block block;
+    InstrBufferx64 buffer;
+    auto compiler = Compiler_x64(&block, &buffer, Compiler_x64::Mode::JIT);
+    compiler.compile_function_call(call);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0xe8, 0x00, 0x00, 0x00, 0x00, //call rel32; with no linking
+        }));
+
+    EXPECT_EQ(
+        buffer._externFuncs.front(),
+        InstrBufferx64::ExternFunction({
+        .symbol = call.functionName,
+        .location = 1
+        }));
+}
+
+TEST(Compilerx64Tests, compile_local_function_objectfile_no_arguments) {
+    FunctionCall call;
+    call.functionName = "cool";
+
+    Block block;
+    InstrBufferx64 buffer;
+    auto compiler = Compiler_x64(&block, &buffer, Compiler_x64::Mode::ObjectFile);
+    compiler.compile_function_call(call);
+
+    EXPECT_EQ(
+        buffer.buffer(),
+        std::vector<uint8_t>({
+            0xe8, 0x00, 0x00, 0x00, 0x00, //call rel32; with no linking
+        }));
+
+    EXPECT_EQ(
+        buffer._externFuncs.front(),
+        InstrBufferx64::ExternFunction({
+        .symbol = call.functionName,
+        .location = 1
         }));
 }
 

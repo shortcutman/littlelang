@@ -87,15 +87,19 @@ void Compiler_x64::compile_function_call(const FunctionCall& call) {
     if (_mode == Mode::JIT) {
         void* dlHandle = dlopen(0, RTLD_NOW);
         void* functionAddr = dlsym(dlHandle, call.functionName.c_str());
-        if (!functionAddr) {
-            throw std::runtime_error("Unknown function name.");
+        if (functionAddr) {
+            _buff->mov_r64_imm64(
+                InstrBufferx64::Register::RAX,
+                reinterpret_cast<uint64_t>(functionAddr));
+    
+            _buff->call_r64(InstrBufferx64::Register::RAX);
+        } else {
+            _buff->call_rel32(0);
+            _buff->_externFuncs.push_back({
+                .symbol = call.functionName,
+                .location = _buff->buffer().size() - sizeof(int32_t)
+            });
         }
-
-        _buff->mov_r64_imm64(
-            InstrBufferx64::Register::RAX,
-            reinterpret_cast<uint64_t>(functionAddr));
-
-        _buff->call_r64(InstrBufferx64::Register::RAX);
     } else if (_mode == Mode::ObjectFile) {
         _buff->call_rel32(0);
         _buff->_externFuncs.push_back({
