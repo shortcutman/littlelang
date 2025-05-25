@@ -5,6 +5,7 @@
 #include "MachO.hpp"
 #include "Parser.hpp"
 #include "TranslationUnit.hpp"
+#include "Linker.hpp"
 
 #include "vendor/cli11/CLI11.hpp"
 
@@ -117,20 +118,13 @@ int main(int argc, char** argv) {
     
         auto sv = std::string_view{program_text};
         auto tu = ll::TranslationUnit::parse_translation_unit(sv);
-        for (auto& func : tu->functions) {
-            symbols.push_back(FunctionSymbol{
-                .name = func->name,
-                .offset = instrbuff.buffer().size()
-            });
-            auto compiler = Compiler_x64(func->block.get(), &instrbuff, mode);
-            compiler.compile_function();
-        }
+        auto obj = ll::Object::compile_translation_unit(*tu, mode);
     
-        auto entryPoint = std::find_if(symbols.begin(), symbols.end(), [] (auto& v) {
+        auto entryPoint = std::find_if(obj.symbols.begin(), obj.symbols.end(), [] (auto& v) {
             return v.name == "main";
         });
 
-        instrbuff.execute(entryPoint->offset);
+        obj.buff.execute(entryPoint->offset);
     } else if (mode == Compiler_x64::Mode::ObjectFile) {
         Parser parser;
         parser.parse_block(program_text);
